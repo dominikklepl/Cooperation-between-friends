@@ -1,0 +1,159 @@
+---
+title: "Preprocesses data"
+author: "Dominik Klepl"
+date: "17 5 2018"
+output: html_document
+---
+
+#Load libraries
+```{r}
+library(readxl)
+```
+
+#Load data
+```{r load data}
+raw=readxl::read_xlsx("data/raw.xlsx",na="NA")
+logs=readxl::read_xlsx('data/logs.xlsx',na="NA")
+```
+
+# 1. Clean data: 
+Drop variables, rename (drop links to otree classes, player. etc.), remove data left from testing if any.
+
+## Drop variables
+```{r}
+#make copy of the data
+logs_c = logs
+raw_c = raw
+
+#drop the columns we don't need
+logs_c = logs_c[,c(2,8,18:21,26)]
+raw_c = raw_c[,c(2, 21:27)]
+```
+
+#Rename variables
+```{r}
+#get rid of the class names in every variable (e.g. 'player.', 'group.')
+drop_class = function (file) {
+  names=colnames(file)
+  
+  new = {}
+  for (name in names) {
+    old_to_new=gsub("^.*\\.","",name)
+    new=c(new,old_to_new)
+  }
+  #rename the variables in logs
+  colnames(file) = new
+  return(file)
+}
+
+#rename in both files
+logs_c=drop_class(logs_c)
+raw_c=drop_class(raw_c)
+
+#rename uninteligable names of variables
+  #logs
+colnames(logs_c)[c(1,2,7)]=c("ID","n_rounds","group_ID")
+  #raw
+colnames(raw_c)[c(1,2,3,7)]=c("ID","linked_n","link","guess_n")
+
+#remove left over data from testing
+logs_c=na.omit(logs_c)
+raw_c=na.omit(raw_c)
+```
+
+
+Rename levels in condition and gender
+```{r}
+logs_c$condition=as.factor(logs_c$condition)
+logs_c$gender=as.factor(logs_c$gender)
+
+levels(logs_c$condition)=c("F","S")
+levels(logs_c$gender)=c("F","M")
+```
+
+## Replace numbers in linked_words with the actual words (could do also guessed words)
+```{r}
+#load the dictionary with the used words
+dict = readxl::read_xlsx("data/dictionary.xlsx")
+
+#loop through linked_words in raw_c
+match_words = function (variable,new_var) {
+  pars = as.list(match.call()[-1])
+  
+  out = data.frame()
+  for (linked in raw_c[,as.character(pars$variable)]) {
+  #remove whitespace
+  no_whitespace = gsub(" ", "", linked)
+  
+  #split by comma
+  split = strsplit(no_whitespace, ',')
+  
+  #change to df and match the number with the word
+  split = as.data.frame(split, col.names = "number")
+  merged = merge(split, dict, by = "number")
+  
+  #convert back from df to string
+  coerce = unlist(merged$word)
+  
+  #combine coerce into 1 comma separated string
+  string = paste(coerce, sep = ",", collapse = ",")
+  
+  #return a dataframe with all values
+  out[nrow(out) + 1,as.character(pars$new_var)] = string
+  }
+  return(out)
+}
+
+linked_matched=match_words('linked_words',"linked")
+guessed_matched=match_words("guessing","guessed")
+
+#cbind the words to the data
+raw_c = cbind(raw_c,linked_matched)
+raw_c = cbind(raw_c,guessed_matched)
+
+#merge raw_c with logs
+data_all = merge(logs_c,raw_c,by='ID')
+write.csv(data_all,"data/data_merged.csv",row.names = F)
+```
+
+
+Summarize data (1 row per game):
+  number of rounds
+  number of errors
+```{r}
+library(tidyverse)
+
+#calculate number of mistakes in each game and number of rounds
+short_data = data_all %>%
+  group_by(group_ID) %>%
+  summarise(
+  mistakes = sum((linked_n - guess_n)),
+  n_rounds = max(n_rounds),
+  condition = unique(condition)
+  )
+
+write.csv(short_data,"data/clean_data_short.csv",row.names=F)
+```
+
+In long data (1 row per round):
+  confidence
+  semantic distance of link word and linked_words
+  
+```{r}
+#drop one row from each round (they're duplicated)
+
+#first get rid of useless variables
+long_data = data_all[,c(-1,-4:-6)]
+
+#remove rows that have lower n_rounds than the other player - that's error from the script
+long_data = long_data %>%
+  group_by(group_ID) %>%
+  filter(n_rounds==max(n_rounds))
+
+#drop the duplicated data
+long_data=long_data[!duplicated(long_data),]
+
+#save the data
+write.csv(long_data,"data/clean_data_long.csv",row.names=F)
+```
+
