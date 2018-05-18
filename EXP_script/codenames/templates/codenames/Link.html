@@ -1,0 +1,21 @@
+{% extends "global/Page.html" %}
+{% load static otree %}
+
+{% block title %}
+    Choose heroes to contact
+{% endblock %}
+
+{% block content %}
+    {% if pattern_1  <= 1 %}
+        <img src="{% static "global/code_card_P1.png" %}"/>
+    {% else %}
+        <img src="{% static "global/code_card_P2.png" %}"/>
+    {% endif %}
+    {% formfield group.n_linked_words label="How many heroes do you want to contact?" %}
+    {% formfield group.linked_words label="Which heroes are these?" %}
+    {% formfield group.link_word label="What is the contact word?" %}
+    {% formfield group.confidence label="How confident are you that the contact will be successful? (on scale 0-10)" %}
+
+    {% next_button %}
+
+{% endblock %}

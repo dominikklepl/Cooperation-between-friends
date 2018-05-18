@@ -1,0 +1,17 @@
+{% extends "global/Page.html" %}
+{% load static otree %}
+
+{% block title %}
+    Hello stranger, ehm I mean, I am Groot
+{% endblock %}
+
+{% block content %}
+    <img src="{% static "global/hi.jpg" %}"/>
+    <p> You seem like a good guy. Let me tell you something.
+Did you know a group of super-villains is planning to destroy the Earth?  </p>
+    <p> You didn't?!! Oh well, now you know. But no worries, we have a plan. </p>
+    <p> "We" in this context means a secret organization. Would you like to help us? </p>
+    <p> Great! So let's get you started. First we'll need some information about you. Just the classic stuff: superpowers, arch-enemies, you know. </p>
+
+    {% next_button %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "global/Page.html" %}
+{% load static otree %}
+
+{% block title %}
+    Choose heroes to contact
+{% endblock %}
+
+{% block content %}
+    <p> Your task is to contact {{ group.n_linked_words }} heroes. </p>
+    <p> These heroes will respond to a code word: {{ group.link_word }}. </p>
+
+    <p> But beware of the villains!!! </p>
+
+    {% formfield group.guessing label="Based on the code word, which heroes are you going to contact?" %}
+
+    {% next_button %}
+
+{% endblock %}

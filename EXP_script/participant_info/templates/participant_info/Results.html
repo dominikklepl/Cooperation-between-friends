@@ -1,0 +1,17 @@
+{% extends "global/Page.html" %}
+{% load static otree %}
+
+{% block title %}
+    Congratulations
+{% endblock %}
+
+{% block content %}
+    <p>You have just been accepted to our secret organization. We are known as {{ group.organization }}.</p>
+    <p>Your team is called {{ player.condition }}. I know it's weird but our bureaucracy wants it that way, everybody just ignores it anyway.</p>
+    <p>Soo, now you are ready to kick some evil ass. Well, not you of course, the heroes will do the actual kicking. </p>
+
+    <img src="{% static "global/thumbs_up.jpg" %}"/>
+    {% next_button %}
+{% endblock %}
+
+

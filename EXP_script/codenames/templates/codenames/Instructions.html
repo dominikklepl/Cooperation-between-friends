@@ -1,0 +1,51 @@
+{% extends "global/Page.html" %}
+{% load static otree %}
+
+{% block title %}
+    How we do this
+{% endblock %}
+
+{% block content %}
+
+    <p> Now it's time for more detailed instruction. Don't worry it's simple, almost like a game.</p>
+
+    <p> In the game there are 25 word cards. They represent a cover identity of the heroes and the villains, who also made up some secret names to deceive you.
+        You only know the covers of 9 heroes, that you can see in blue on your codecard. Your teammate also knows 9 names, and 3 of them overlap with yours.
+        So in total you and your partner need to contact 15 heroes. Your task is to give a one word clue, that connects the covers of the most heroes possible.
+        Beware ofo using a clue that might refer to a villain as well! Try to connect the heroes with the fewest linkwords possible.
+        The sooner you contact them all, the greater the hope for victory is.</p>
+
+    <p> The Rules </p>
+
+    <p> In the game, you will both be giving and receiving clues/linkwords, and your roles will alternate from round to round.
+        Please read the tasks of both roles carefully!</p>
+
+    <p> Headquarters </p>
+    <p> If you are the one giving the clues, first look at all the words on the table. Each word is assigned a number which you'll be using to refer to them. Write the heroes’ number you want to connect
+        and give a one word clue in English, with the number of words you linked, so that your partner knows how many words are to be guessed. Say the linkword and the number aloud.
+        Type the numbers, separated by a comma, the linkword, and the number of words into their respective boxes.
+        Indicate how confident you are that your partner will guess the words correctly on a scale from 0 to 10.
+        It’s very important that you keep a poker face and do not give any additional clues.
+        Wait for your partner to make a guess.
+        After your partner types and tells you the guesses, you will get a summary of how many words were guessed correctly.
+        Tell your partner which were the correct ones and cover the corresponding cards on the table in front of you
+        with either a blue card indicating a hero or a red card meaning you contacted a villain. Cover the villains only partially!
+        Remember, you might see the card as a villain, but that person might actually be a hero in undercover, whose real identity only
+        your partner knows. The words your partner didn’t guess are still in play and need to be guessed in following rounds.</p>
+
+    <p> Field Agent </p>
+    <p> The agent’s task is to guess the words the headquarters linked. Look at all the available words and try to guess the ones you think the linkword refers to.
+        Write down the numbers of all your guesses into the corresponding box separated by commas. Tell your After pushing the 'next' button, you will get the same summary as desscribed above. Don't forget to say the words aloud, so that your partner can cover the words with the red or blue cards. The hero is succesfully contacted only if you guess the hero that was intended to be contacted with the given link word.</p>
+
+    <p> Link words </p>
+    <p> The linkword must be ONE word in ENGLISH. The words have to refer to the meaning of the words, you cannot refer to their position or the number of letters in the word
+        (e.g. right,3 for the three cards on the right side of the board). Nor can you use parts of a word (e.g. butter for butterfly).
+        Names are allowed as long as the name is a single word (e.g. Plato). </p>
+
+    <p> The game continues until all heroes are contacted. </p>
+    <p> To ensure you understand the game, we are going to play a short demo now together, outside of the programme. </p>
+
+    <p> If you have any questions, feel free to ask the experimenters! Have a great time, and please save us! ;) </p>
+
+    {% next_button %}
+{% endblock %}
