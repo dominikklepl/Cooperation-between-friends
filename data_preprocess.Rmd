@@ -27,7 +27,7 @@ raw_c = raw
 
 #drop the columns we don't need
 logs_c = logs_c[,c(2,8,18:21,26)]
-raw_c = raw_c[,c(2, 21:27)]
+raw_c = raw_c[,c(2, 21:27,29)]
 ```
 
 #Rename variables
@@ -54,7 +54,7 @@ raw_c=drop_class(raw_c)
   #logs
 colnames(logs_c)[c(1,2,7)]=c("ID","n_rounds","group_ID")
   #raw
-colnames(raw_c)[c(1,2,3,7)]=c("ID","linked_n","link","guess_n")
+colnames(raw_c)[c(1,2,3,7,9)]=c("ID","linked_n","link","guess_n","round")
 
 #remove left over data from testing
 logs_c=na.omit(logs_c)
