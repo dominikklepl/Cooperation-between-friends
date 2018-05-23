@@ -137,6 +137,9 @@ short_data$group_ID=as.factor(short_data$group_ID)
 short_data$group_ID=as.numeric(short_data$group_ID)
 short_data=short_data[,-4]
 
+#remove group 7 - that game did not run till the end
+short_data=short_data[!short_data$group_ID==7,]
+
 write.csv(short_data,"data/clean_data_short.csv",row.names=F)
 ```
 

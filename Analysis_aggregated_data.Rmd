@@ -1,0 +1,278 @@
+---
+title: "Analysis of aggregated data"
+author: "Dominik Klepl"
+date: "23 5 2018"
+output: html_document
+---
+```{r library}
+pacman::p_load(rethinking,ggplot2,ggthemes,bayesplot)
+```
+
+```{r load data}
+data=read.csv("data/clean_data_short.csv")
+
+#rename group_ID to just ID
+colnames(data)[1]="ID"
+data$ID = as.factor(data$ID)
+```
+
+# 1. Explore the data
+
+Hypothesis 1: Group of friends make more mistakes than strangers
+Hypothesis 2: Group of friends need more rounds to connect all words
+```{r}
+#create condition variable just for plotting purposes
+data$condition=ifelse(data$friends==1,yes="Friends",no="Strangers")
+data$condition=as.factor(data$condition)
+
+#get descriptive statistics of all variables by condition
+psych::describeBy(data,data$condition) #both mean and median are higher for friends
+
+#plot the differences
+(plot_mistakes=ggplot(data,aes(x=condition,y=mistakes,fill=condition))+
+  geom_boxplot()+
+  labs(title="Amount of mistakes")+
+  scale_fill_fivethirtyeight())
+
+(plot_rounds=ggplot(data,aes(x=condition,y=n_rounds,fill=condition))+
+  geom_boxplot()+
+  labs(title="Number of rounds")+
+  scale_fill_fivethirtyeight())
+
+ggsave("Figures/Aggregated/Mistakes_plot.jpg", plot_mistakes)
+ggsave("Figures/Aggregated/N_rounds_plot.jpg", plot_rounds)
+
+```
+
+So the patterns seem to be in the data. Now we can test it with models.
+
+# 2. Build simple models (1 predictor/interaction)
+First we build the simplest models
+
+Condition predicted from mistakes
+```{r}
+m_mistakes = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bE*mistakes ,
+        a ~ dnorm(0,0.2),
+        bE ~ dnorm(0,1)
+    ) ,
+    data=data,
+    iter = 1e4,warmup = 1000,chains = 2,cores=2)
+
+plot(m_mistakes)
+pairs(m_mistakes)
+
+m_mistakes_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bE*mistakes ,
+        a[ID] ~ dnorm(0,0.2),
+        bE ~ dnorm(0,1)
+    ) ,
+    data=data,
+    iter = 1e4,warmup = 1000,chains = 2,cores=2)
+
+plot(m_mistakes_random)
+pairs(m_mistakes_random)
+
+#the models are basically the same + give us similar results
+compare(m_mistakes,m_mistakes_random)
+
+#look at the results
+(mistakes_results = precis(m_mistakes))
+mistakes_results = round(mistakes_results@output,3)
+plot(mistakes_results)
+
+write.csv(mistakes_results,"Results/Aggregated/mistakes_results.csv")
+
+#make a plot of the increasing odds with increasing the mistakes
+
+#generate predictions for sequence of mistakes
+mistakes_vis=data.frame(mistakes=seq(0,30,by=1),condition=rep(0,31))
+
+l_mis=link(m_mistakes,data=mistakes_vis,1e4)
+mistakes_vis$mean=apply(l_mis , 2 , mean )
+mistakes_vis=cbind(mistakes_vis,as.data.frame(t(apply(l_mis , 2 , PI , prob=0.89 ))))
+
+(odds_plot_mistakes=ggplot(mistakes_vis,aes(x=mistakes))+
+  geom_line(aes(y=mean))+
+  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.3,fill="#0092ff")+
+  labs(title="Increase in odds of being friends with increasing number of mistakes",x="Odds",y="Number of mistakes"))
+
+ggsave("Figures/Aggregated/Plot_increasing_odds_mistakes.jpg",odds_plot_mistakes)
+```
+
+Condition predicted from n_rounds
+```{r}
+m_rounds = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bR*n_rounds ,
+        a ~ dnorm(0,0.1),
+        bR ~ dnorm(0,1)
+    ) ,
+    data=data,
+    chains = 2,
+    iter=1e4,
+    cores = 2)
+
+plot(m_rounds)
+pairs(m_rounds)
+
+m_rounds_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bR*n_rounds ,
+        a[ID] ~ dnorm(0,0.1),
+        bR ~ dnorm(0,1)
+    ) ,
+    data=data,
+    chains = 2,
+    iter=1e4,
+    cores = 2)
+
+plot(m_rounds_random)
+pairs(m_rounds_random)
+
+#compare the models
+compare(m_rounds,m_rounds_random) #again they're basically the same
+
+#look at the results of simpler model
+(rounds_results = precis(m_rounds)) #overlap with zero
+rounds_results = round(rounds_results@output,3)
+plot(rounds_results)
+
+write.csv(rounds_results,"Results/Aggregated/rounds_results.csv")
+
+#generate predictions for sequence of rounds_n
+rounds_vis=data.frame(n_rounds=seq(1,20,by=1),condition=rep(0,20))
+
+l=link(m_rounds,data=rounds_vis,1e4)
+rounds_vis$mean=apply(l , 2 , mean )
+rounds_vis=cbind(rounds_vis,as.data.frame(t(apply(l , 2 , PI , prob=0.89 ))))
+
+(odds_plot_rounds=ggplot(rounds_vis,aes(x=n_rounds))+
+  geom_line(aes(y=mean))+
+  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
+  labs(title="Increase in odds of being friends with increasing number of rounds",x="Number of mistakes",y="Odds"))
+
+ggsave("Figures/Aggregated/Plot_increasing_odds_rounds.jpg",odds_plot_rounds)
+```
+
+
+Now build a model that has both predictors of above models
+```{r}
+m_all = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bE*mistakes +bR*n_rounds ,
+        a ~ dnorm(0,0.1),
+        bR ~ dnorm(0,0.2),
+        bE ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    chains = 2,
+    iter=1e4,
+    cores = 2)
+
+m_all_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bE*mistakes +bR*n_rounds ,
+        a[ID] ~ dnorm(0,0.1),
+        bR ~ dnorm(0,0.2),
+        bE ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    chains = 2,
+    iter=1e4,
+    cores = 2)
+
+compare(m_all,m_all_random)
+```
+
+Is it necessary to do plots for m_all?
+```{r}
+compare(m_all_random,m_all,m_mistakes,m_mistakes_random,m_rounds,m_rounds_random) #the m_all has the highest WAIC, effects seem to be the same too - no need for more plots
+```
+
+Model quality check - with PPC plots (equivalent to confusion matrix)
+```{r}
+yrep_m=sim(m_mistakes,n=1e4)
+yrep_r=sim(m_rounds,n=1e4)
+yrep_a=sim(m_all_random,n=1e4)
+
+#and ensemble
+ens = ensemble(m_all_random,m_all,m_mistakes,m_mistakes_random,m_rounds,m_rounds_random,data=data)
+yrep_ens=ens$sim
+
+y=data$friends
+
+success <- function(x) sum(x == 1)/length(x)
+
+y_success=success(y)
+success(yrep_m)-y_success
+success(yrep_r)-y_success
+success(yrep_a)-y_success
+success(yrep_ens)-y_success
+
+(PPC_mistakes=ppc_stat(y,yrep_m,stat="success",binwidth = 0.05)+
+  labs(title="Proportion of group of friends predicted from mistakes",x="proportion of friends",y="n of models"))
+(PPC_rounds=ppc_stat(y,yrep_r,stat="success",binwidth = 0.05)+
+  labs(title="Proportion of group of friends predicted from rounds",x="proportion of friends",y="n of models"))
+(PPC_all=ppc_stat(y,yrep_a,stat="success",binwidth = 0.05)+
+  labs(title="Proportion of group of friends predicted from mistakes and rounds",x="proportion of friends",y="n of models"))
+(PPC_ensemble=ppc_stat(y,yrep_ens,stat="success",binwidth = 0.05)+
+  labs(title="Proportion of group of friends predicted ensemble of all models",x="proportion of friends",y="n of models"))
+
+ggsave("Figures/Aggregated/PPC_mistakes.jpg",PPC_mistakes)
+ggsave("Figures/Aggregated/PPC_rounds.jpg",PPC_rounds)
+ggsave("Figures/Aggregated/PPC_short_model_all.jpg",PPC_all)
+ggsave("Figures/Aggregated/PPC_short_ensemble.jpg",PPC_ensemble)
+```
+
+According to the PPC plot the full model seems to predict the data the best so let's look at its results and plot them. (report probably either just that or the 2 separate)
+```{r}
+(all_result = precis(m_all_random,depth = 2))
+all_result=round(all_result@output,3)
+
+plot(precis(m_all_random,depth = 2))
+
+write.csv(all_result,"Results/Aggregated/short_model_all.csv")
+```
+
+Plot the effect of rounds - overlaps with zero so it will look quite bad again but it's in opposite direction after the mistakes are accounted for
+```{r}
+#make new data to predict where rounds change and mistakes stay constant at 0
+all_vis_rounds=data.frame(n_rounds=seq(0,30,by=1),mistakes=rep(0,31),condition=rep(0,31),ID=rep(1,31))
+
+all_l_rounds=link(m_all_random,data=all_vis_rounds,1e4)
+all_vis_rounds$mean=apply(all_l_rounds , 2 , mean )
+all_vis_rounds=cbind(all_vis_rounds,as.data.frame(t(apply(all_l_rounds , 2 , PI , prob=0.89 ))))
+
+(odds_plot_rounds_all=ggplot(all_vis_rounds,aes(x=n_rounds))+
+  geom_line(aes(y=mean))+
+  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
+  labs(title="Change of odds odds of being friends with increasing number of rounds",x="Number of rounds",y="Odds"))
+
+ggsave("Figures/Aggregated/Odds_change_rounds_all.jpg",odds_plot_rounds_all)
+```
+
+And now effect of mistakes
+```{r}
+#make new data to predict where rounds change and mistakes stay constant at 0
+all_vis_mistakes=data.frame(n_rounds=rep(0,31),mistakes=seq(0,30,by=1),condition=rep(0,31),ID=rep(1,31))
+
+all_l_mistakes=link(m_all_random,data=all_vis_mistakes)
+all_vis_mistakes$mean=apply(all_l_mistakes , 2 , mean )
+all_vis_mistakes=cbind(all_vis_mistakes,as.data.frame(t(apply(all_l_mistakes , 2 , PI , prob=0.89 ))))
+
+(odds_plot_mistakes_all=ggplot(all_vis_mistakes,aes(x=mistakes))+
+  geom_line(aes(y=mean))+
+  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
+  labs(title="Change of odds of being friends with increasing number of mistakes",x="Number of mistakes",y="Odds"))
+
+ggsave("Figures/Aggregated/Odds_change_mistakes_all.jpg",odds_plot_mistakes_all)
+```

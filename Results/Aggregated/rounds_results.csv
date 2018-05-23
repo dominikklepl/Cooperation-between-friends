@@ -1,0 +1,5 @@
+Friends ~ n_rounds;;;;
+;Mean;StdDev;lower 0.89;upper 0.89
+_;-0.006;0.101;-0.163;0.159
+§ n_rounds;0.051;0.062;-0.047;0.148
+Table X: Estimates of model: condition ~ n_rounds;;;;

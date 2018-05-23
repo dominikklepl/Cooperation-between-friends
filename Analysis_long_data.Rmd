@@ -1,0 +1,6 @@
+---
+title: "Analysis of long data"
+author: "Dominik Klepl"
+date: "23 5 2018"
+output: html_document
+---
