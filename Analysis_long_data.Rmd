@@ -15,7 +15,7 @@ pacman::p_load(rethinking,ggplot2,ggthemes,bayesplot)
 data=read.csv("data/clean_data_long.csv")
 
 #rename group_ID to just ID
-colnames(data)[1]="ID"
+colnames(data)[c(1,6)]=c("ID","trial")
 data$ID = as.factor(data$ID)
 ```
 
@@ -87,13 +87,256 @@ ggsave("Figures/Long/explore_performance_round.jpg",explore_performance_round)
 We build separate models for each hypotheses and then one that combines all the predictors.
 
 ## 2.1 Hypothesis 1 - Linked_n
+```{r}
+m_linked_n = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bL*linked_n ,
+        a ~ dnorm(0,0.1),
+        bL ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+#check the chains
+plot(m_linked_n)
+pairs(m_linked_n)
+
+m_linked_n_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bL*linked_n ,
+        a[ID] ~ dnorm(0,0.1),
+        bL ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_linked_n_random)
+pairs(m_linked_n_random)
+
+m_linked_n_round = map2stan(
+    alist(
+      friends ~ dbinom( 1 , p ),
+      logit(p) <- a +bL*linked_n +bT*trial +bLT*linked_n*trial,
+      a ~ dnorm(0,0.1),
+      bL ~ dnorm(0,0.2),
+      bT ~ dnorm(0,0.2),
+      bLT ~ dnorm(0,0.2)
+  ),
+    data=data,iter = 1e4,chains=2,cores = 2)
+
+plot(m_linked_n_round)
+pairs(m_linked_n_round)
+
+#needs longer chains - low n_eff
+m_linked_n_round_random = map2stan(
+    alist(
+      friends ~ dbinom( 1 , p ),
+      logit(p) <- a[ID] +bL*linked_n +bT*trial +bLT*linked_n*trial,
+      a[ID] ~ dnorm(0,0.1),
+      bL ~ dnorm(0,0.2),
+      bT ~ dnorm(0,0.2),
+      bLT ~ dnorm(0,0.2)
+  ),
+    data=data,iter = 3e4,chains=2,cores = 2)
+
+plot(m_linked_n_round_random)
+pairs(m_linked_n_round_random)
+
+compare(m_linked_n,m_linked_n_random,m_linked_n_round,m_linked_n_round_random)
+```
+
 
 ## 2.2 Hypothesis 2 - Performance
+```{r}
+m_performance = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bP*performance ,
+        a ~ dnorm(0,0.1),
+        bP ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_performance)
+pairs(m_performance)
+
+m_performance_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bP*performance ,
+        a[ID] ~ dnorm(0,0.1),
+        bP ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_performance_random)
+pairs(m_performance_random)
+
+m_performance_round = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bP*performance + bT*trial + bPT*performance*trial ,
+        a ~ dnorm(0,0.1),
+        bP ~ dnorm(0,0.2),
+        bT ~ dnorm(0,0.2),
+        bPT ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_performance_round)
+pairs(m_performance_round)
+
+m_performance_round_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bP*performance + bT*trial + bPT*performance*trial ,
+        a[ID] ~ dnorm(0,0.1),
+        bP ~ dnorm(0,0.2),
+        bT ~ dnorm(0,0.2),
+        bPT ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_performance_round_random)
+pairs(m_performance_round_random)
+
+compare(m_performance,m_performance_random,m_performance_round,m_performance_round_random)
+```
+
 
 ## TODO: 2.3 Hypothesis 3 - Confidence
 
 ## 2.4 Combinations of models and full model
+```{r}
+m_performance_linked_n= map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bP*performance +  bL*linked_n,
+        a[ID] ~ dnorm(0,0.1),
+        bP ~ dnorm(0,0.2),
+        bL ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+m_full = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bP*performance +  bL*linked_n + bT*trial + bPT*performance*trial + bLT*linked_n*trial,
+        a[ID] ~ dnorm(0,0.1),
+        bP ~ dnorm(0,0.2),
+        bL ~ dnorm(0,0.2),
+        bT ~ dnorm(0,0.2),
+        bPT ~ dnorm(0,0.2),
+        bLT ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_full)
+pairs(m_full)
+```
+
 
 # 3. Compare models and assess model quality (PPC plots)
+```{r}
+compare(m_linked_n_round_random,m_performance_round_random,m_performance_linked_n,m_full)
 
-# 4. Plot the results of each effect (use only best models)
+#PPC plots - how could are the models predicting proportion of friend groups in the data
+
+#define function that calculates the proportion
+success <- function(x) sum(x == 1)/length(x)
+
+#proportion in training data
+y=data$friends
+success(y)
+
+#predictions of models
+y_link_round=sim(m_linked_n_round_random)
+y_performance_round=sim(m_performance_round_random)
+y_performance_link=sim(m_performance_linked_n)
+y_full = sim(m_full,n=1e4)
+
+# + an ensemble model
+ens = ensemble(m_linked_n_round_random,m_performance_round_random,m_performance_linked_n,m_performance_linked_n_round,m_linked_n_performance_round,m_full)
+
+y_ens = ens$sim
+
+ppc_stat(y,y_link_round,stat = 'success',binwidth = 0.01)
+ppc_stat(y,y_performance_round,stat = 'success',binwidth = 0.01)
+ppc_stat(y,y_performance_link,stat = 'success',binwidth = 0.01)
+ppc_stat(y,y_full,stat = 'success',binwidth = 0.01)
+ppc_stat(y,y_ens,stat = 'success',binwidth = 0.01)
+```
+
+
+# 4. Results of each effect (use only best model) and plot it
+```{r}
+#m_full has the most Akaike's weight so we'll interpret the results from that model
+
+(results_full = precis(m_full,depth = 2))
+results_full = round(results_full@output,3)
+plot(precis(m_full,depth = 2))
+```
+
+Plot effect of performance
+```{r}
+#create counterfactual data - everything constant except for performance
+perf=seq(0,100,by=5)
+
+performance_vis = data.frame(
+  performance=perf,
+  linked_n = rep(0,length(perf)),
+  trial = rep(0,length(perf)),
+  friends = rep(0,length(perf)),
+  ID= rep(sample(1:10,1),length(perf))
+)
+
+#compute the mean prediction + 89% intervals
+perf_l = link(m_full,data=performance_vis,n=1e4)
+performance_vis$mean=apply(perf_l, 2 , mean )
+performance_vis=cbind(performance_vis,as.data.frame(t(apply(perf_l , 2 , PI , prob=0.89 ))))
+
+#and plot
+(performance_plot=ggplot(performance_vis,aes(x=performance))+
+  geom_line(aes(y=mean))+
+  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
+  labs(title="Decrease of odds of being friends with increasing performance",x="performance in %",y="Odds"))
+
+ggsave("Figures/Long/Performance_visualization.jpg",performance_plot)
+```
+
+Now repeat the same for linked_n
+```{r}
+#create counterfactual data - everything constant except for linked_n
+linked=seq(0,15,by=1)
+
+linked_n_vis = data.frame(
+  performance=rep(0,length(linked)),
+  linked_n = linked,
+  trial = rep(0,length(linked)),
+  friends = rep(0,length(linked)),
+  ID= rep(sample(1:10,1),length(linked))
+)
+
+#compute the mean prediction + 89% intervals
+linked_l = link(m_full,data=linked_n_vis,n=1e4)
+linked_n_vis$mean=apply(linked_l, 2 , mean )
+linked_n_vis=cbind(linked_n_vis,as.data.frame(t(apply(linked_l , 2 , PI , prob=0.89 ))))
+
+#and plot
+(linked_n_plot=ggplot(linked_n_vis,aes(x=linked_n))+
+  geom_line(aes(y=mean))+
+  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
+  labs(title="Increase of odds of being friends with increasing number of linked words",x="n of linked words",y="Odds"))
+
+ggsave("Figures/Long/Linked_n_visualization.jpg",linked_n_plot)
+```
+
+
