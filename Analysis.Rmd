@@ -4,3 +4,15 @@ author: "Dominik Klepl"
 date: "23 5 2018"
 output: html_document
 ---
+```{r library}
+pacman::p_load(rethinking,ggplot2,ggthemes,bayesplot)
+```
+
+
+
+```{r load data}
+long=read.csv("data/clean_data_long.csv")
+short=read.csv("data/clean_data_short.csv")
+```
+
+
