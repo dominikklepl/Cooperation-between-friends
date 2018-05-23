@@ -4,3 +4,84 @@ author: "Dominik Klepl"
 date: "23 5 2018"
 output: html_document
 ---
+
+# Used libraries
+```{r library}
+pacman::p_load(rethinking,ggplot2,ggthemes,bayesplot)
+```
+
+# Load data
+```{r load data}
+data=read.csv("data/clean_data_long.csv")
+
+#rename group_ID to just ID
+colnames(data)[1]="ID"
+data$ID = as.factor(data$ID)
+```
+
+
+Hypothesis 1: Friends tend to link more words together + interaction = friends' linked_n decreases with rounds whereas strangers' remain stable.
+  models: friends ~ linked_n
+          friends ~ linked_n * round
+
+Hypothesis 2: Friends make more mistakes - performance is lower.
+  models: friends ~ performance
+          friends ~ performance * round 
+            - It should improve with time for friends, there's not much to improve for                 strangers.
+            
+Hypothesis 3: Friends tend to overestimate their confidence in success
+  models: friends ~ confidence 
+          friends ~ confidence * round
+            - should get better over time
+          friends ~ confidence * is_success
+            - when success (1) - confidence is higher than strangers'
+            - when not success (0) - confidence is also higher than strangers'
+
+
+# 1. Explore the data
+```{r explore data}
+psych::describeBy(data[,c(-1,-4:-6,-8)],data$friends)
+
+#create condition variable just for plotting purposes
+data$Condition=ifelse(data$friends==1,yes="Friends",no="Strangers")
+data$Condition=as.factor(data$Condition)
+
+```
+
+Hypothesis 1
+```{r}
+#linked_n 
+(explore_linked_n=ggplot(data,aes(x=Condition,y=linked_n,fill=Condition))+
+  geom_boxplot()+
+  labs(title="Number of linked words by condition",x="",y="number of linked words"))
+
+#linked_n * round
+(explore_linked_n_round=ggplot(data,aes(x=round,y=linked_n,color=Condition))+
+  geom_smooth(method = "glm")+
+  labs(title="Average number of linked words over played rounds by condition",y="number of linked words"))
+
+ggsave("Figures/Long/explore_linked.jpg",explore_linked_n)
+ggsave("Figures/Long/explore_linked_n_round.jpg",explore_linked_n_round)
+```
+
+Hypothesis 2
+```{r}
+(explore_performance = ggplot(data,aes(x=Condition,y=performance,fill=Condition))+
+  geom_boxplot()+
+   labs(title="Performance by condition",x=""))
+
+(explore_performance_round = ggplot(data,aes(x=round,y=performance,color=Condition))+
+  geom_smooth(method="glm")+
+  labs(title="Average performance over played rounds by condition",y="performance"))
+
+ggsave("Figures/Long/explore_performance.jpg",explore_performance)
+ggsave("Figures/Long/explore_performance_round.jpg",explore_performance_round)
+```
+
+#TODO:Hypothesis 3 - only for SocKult paper
+```{r}
+
+```
+
+
+
