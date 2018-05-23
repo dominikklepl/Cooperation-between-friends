@@ -5,8 +5,7 @@ date: "23 5 2018"
 output: html_document
 ---
 ```{r library}
-install.packages("rethinking")
-install.packages("ggplot2")
+pacman::p_load(rethinking,ggplot2,ggthemes,bayesplot)
 ```
 
 
