@@ -15,4 +15,4 @@ long=read.csv("data/clean_data_long.csv")
 short=read.csv("data/clean_data_short.csv")
 ```
 
-
+# 1. Build models simple models (1 predictor/interaction)
