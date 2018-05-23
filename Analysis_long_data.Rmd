@@ -83,5 +83,17 @@ ggsave("Figures/Long/explore_performance_round.jpg",explore_performance_round)
 
 ```
 
+# 2. Build models to test hypotheses
+We build separate models for each hypotheses and then one that combines all the predictors.
 
+## 2.1 Hypothesis 1 - Linked_n
 
+## 2.2 Hypothesis 2 - Performance
+
+## TODO: 2.3 Hypothesis 3 - Confidence
+
+## 2.4 Combinations of models and full model
+
+# 3. Compare models and assess model quality (PPC plots)
+
+# 4. Plot the results of each effect (use only best models)
