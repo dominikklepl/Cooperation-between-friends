@@ -150,30 +150,6 @@ m_rounds_random = map2stan(
 
 plot(m_rounds_random)
 pairs(m_rounds_random)
-
-#compare the models
-compare(m_rounds,m_rounds_random) #again they're basically the same
-
-#look at the results of simpler model
-(rounds_results = precis(m_rounds)) #overlap with zero
-rounds_results = round(rounds_results@output,3)
-plot(rounds_results)
-
-write.csv(rounds_results,"Results/Aggregated/rounds_results.csv")
-
-#generate predictions for sequence of rounds_n
-rounds_vis=data.frame(n_rounds=seq(1,20,by=1),condition=rep(0,20))
-
-l=link(m_rounds,data=rounds_vis,1e4)
-rounds_vis$mean=apply(l , 2 , mean )
-rounds_vis=cbind(rounds_vis,as.data.frame(t(apply(l , 2 , PI , prob=0.89 ))))
-
-(odds_plot_rounds=ggplot(rounds_vis,aes(x=n_rounds))+
-  geom_line(aes(y=mean))+
-  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
-  labs(title="Increase in odds of being friends with increasing number of rounds",x="Number of mistakes",y="Odds"))
-
-ggsave("Figures/Aggregated/Plot_increasing_odds_rounds.jpg",odds_plot_rounds)
 ```
 
 
@@ -273,27 +249,11 @@ all_vis_rounds=cbind(all_vis_rounds,as.data.frame(t(apply(all_l_rounds , 2 , PI 
 (odds_plot_rounds_all=ggplot(all_vis_rounds,aes(x=n_rounds))+
   geom_line(aes(y=mean))+
   geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
-  labs(title="Change of odds odds of being friends with increasing number of rounds",x="Number of rounds",y="Odds"))
+  labs(title="Change of odds of being friends with increasing number of rounds",x="Number of rounds",y="Odds"))
 
 ggsave("Figures/Aggregated/Odds_change_rounds_all.jpg",odds_plot_rounds_all)
 ```
 
-And now effect of mistakes
-```{r}
-#make new data to predict where rounds change and mistakes stay constant at 0
-all_vis_mistakes=data.frame(n_rounds=rep(0,31),mistakes=seq(0,30,by=1),condition=rep(0,31),ID=rep(1,31))
-
-all_l_mistakes=link(m_all_random,data=all_vis_mistakes)
-all_vis_mistakes$mean=apply(all_l_mistakes , 2 , mean )
-all_vis_mistakes=cbind(all_vis_mistakes,as.data.frame(t(apply(all_l_mistakes , 2 , PI , prob=0.89 ))))
-
-(odds_plot_mistakes_all=ggplot(all_vis_mistakes,aes(x=mistakes))+
-  geom_line(aes(y=mean))+
-  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
-  labs(title="Change of odds of being friends with increasing number of mistakes",x="Number of mistakes",y="Odds"))
-
-ggsave("Figures/Aggregated/Odds_change_mistakes_all.jpg",odds_plot_mistakes_all)
-```
 
 Compare prior and posterior
 ```{r}
