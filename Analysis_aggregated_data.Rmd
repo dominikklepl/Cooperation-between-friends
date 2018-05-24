@@ -49,14 +49,29 @@ So the patterns seem to be in the data. Now we can test it with models.
 # 2. Build simple models (1 predictor/interaction)
 First we build the simplest models
 
+Construct priors for intercept and beta (same for all models)
+
+```{r}
+priors = data.frame(alpha = rnorm(0,0.05,n=1e4),
+                    beta = rnorm(0,0.2,n=1e4))
+
+priors = reshape2::melt(priors)
+
+(priors_plot=ggplot(priors,aes(x=value,color=variable))+
+  geom_line(stat="density"))
+
+ggsave("Figures/Aggregated/Priors_plot.jpg",priors_plot)
+```
+
+
 Condition predicted from mistakes
 ```{r}
 m_mistakes = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
-        logit(p) <- a + bE*mistakes ,
-        a ~ dnorm(0,0.2),
-        bE ~ dnorm(0,1)
+        logit(p) <- a + bM*mistakes ,
+        a ~ dnorm(0,0.05),
+        bM ~ dnorm(0,0.2)
     ) ,
     data=data,
     iter = 1e4,warmup = 1000,chains = 2,cores=2)
@@ -67,9 +82,9 @@ pairs(m_mistakes)
 m_mistakes_random = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
-        logit(p) <- a[ID] + bE*mistakes ,
-        a[ID] ~ dnorm(0,0.2),
-        bE ~ dnorm(0,1)
+        logit(p) <- a[ID] + bM*mistakes ,
+        a[ID] ~ dnorm(0,0.05),
+        bM ~ dnorm(0,0.2)
     ) ,
     data=data,
     iter = 1e4,warmup = 1000,chains = 2,cores=2)
@@ -81,7 +96,7 @@ pairs(m_mistakes_random)
 compare(m_mistakes,m_mistakes_random)
 
 #look at the results
-(mistakes_results = precis(m_mistakes))
+(mistakes_results = precis(m_mistakes_random,depth = 2))
 mistakes_results = round(mistakes_results@output,3)
 plot(mistakes_results)
 
@@ -90,9 +105,9 @@ write.csv(mistakes_results,"Results/Aggregated/mistakes_results.csv")
 #make a plot of the increasing odds with increasing the mistakes
 
 #generate predictions for sequence of mistakes
-mistakes_vis=data.frame(mistakes=seq(0,30,by=1),condition=rep(0,31))
+mistakes_vis=data.frame(mistakes=seq(0,30,by=1),condition=rep(0,31),ID=rep(1, 31))
 
-l_mis=link(m_mistakes,data=mistakes_vis,1e4)
+l_mis=link(m_mistakes_random,data=mistakes_vis,1e4)
 mistakes_vis$mean=apply(l_mis , 2 , mean )
 mistakes_vis=cbind(mistakes_vis,as.data.frame(t(apply(l_mis , 2 , PI , prob=0.89 ))))
 
@@ -110,8 +125,8 @@ m_rounds = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
         logit(p) <- a + bR*n_rounds ,
-        a ~ dnorm(0,0.1),
-        bR ~ dnorm(0,1)
+        a ~ dnorm(0,0.05),
+        bR ~ dnorm(0,0.2)
     ) ,
     data=data,
     chains = 2,
@@ -125,8 +140,8 @@ m_rounds_random = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
         logit(p) <- a[ID] + bR*n_rounds ,
-        a[ID] ~ dnorm(0,0.1),
-        bR ~ dnorm(0,1)
+        a[ID] ~ dnorm(0,0.05),
+        bR ~ dnorm(0,0.2)
     ) ,
     data=data,
     chains = 2,
@@ -167,10 +182,10 @@ Now build a model that has both predictors of above models
 m_all = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
-        logit(p) <- a + bE*mistakes +bR*n_rounds ,
-        a ~ dnorm(0,0.1),
+        logit(p) <- a + bM*mistakes +bR*n_rounds ,
+        a ~ dnorm(0,0.05),
         bR ~ dnorm(0,0.2),
-        bE ~ dnorm(0,0.2)
+        bM ~ dnorm(0,0.2)
     ) ,
     data=data,
     chains = 2,
@@ -180,10 +195,10 @@ m_all = map2stan(
 m_all_random = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
-        logit(p) <- a[ID] + bE*mistakes +bR*n_rounds ,
-        a[ID] ~ dnorm(0,0.1),
+        logit(p) <- a[ID] + bM*mistakes +bR*n_rounds ,
+        a[ID] ~ dnorm(0,0.05),
         bR ~ dnorm(0,0.2),
-        bE ~ dnorm(0,0.2)
+        bM ~ dnorm(0,0.2)
     ) ,
     data=data,
     chains = 2,
@@ -195,12 +210,15 @@ compare(m_all,m_all_random)
 
 Is it necessary to do plots for m_all?
 ```{r}
-compare(m_all_random,m_all,m_mistakes,m_mistakes_random,m_rounds,m_rounds_random) #the m_all has the highest WAIC, effects seem to be the same too - no need for more plots
+comparison=compare(m_all_random,m_all,m_mistakes,m_mistakes_random,m_rounds,m_rounds_random) #the m_all has the highest WAIC, effects seem to be the same too - no need for more plots
+comparison=round(comparison@output,3)
+
+write.csv(comparison,"Results/Aggregated/model_selection.csv")
 ```
 
 Model quality check - with PPC plots (equivalent to confusion matrix)
 ```{r}
-yrep_m=sim(m_mistakes,n=1e4)
+yrep_m=sim(m_mistakes_random,n=1e4)
 yrep_r=sim(m_rounds,n=1e4)
 yrep_a=sim(m_all_random,n=1e4)
 
@@ -275,4 +293,36 @@ all_vis_mistakes=cbind(all_vis_mistakes,as.data.frame(t(apply(all_l_mistakes , 2
   labs(title="Change of odds of being friends with increasing number of mistakes",x="Number of mistakes",y="Odds"))
 
 ggsave("Figures/Aggregated/Odds_change_mistakes_all.jpg",odds_plot_mistakes_all)
+```
+
+Compare prior and posterior
+```{r}
+samples_mistakes = extract.samples(m_mistakes_random,n=1e4)
+samples_all = extract.samples(m_all_random,n=1e4)
+
+prior=rnorm(0,0.2,n=1e4)
+
+PP_mistakes = data.frame(Prior=prior,Posterior=samples_mistakes$bM)
+PP_rounds = data.frame(Prior=prior,Posterior=samples_all$bR)
+
+PP_mistakes = reshape2::melt(PP_mistakes)
+PP_rounds = reshape2::melt(PP_rounds)
+
+(PP_mist_plot=ggplot(PP_mistakes,aes(x=value,color=variable))+
+  geom_line(stat = "density")+
+  labs(title="Prior and posterior of the effect of mistakes"))
+
+(PP_rounds_plot=ggplot(PP_rounds,aes(x=value,color=variable))+
+  geom_line(stat = "density")+
+  labs(title="Prior and posterior of the effect of n_rounds"))
+
+ggsave("Figures/Aggregated/PP_mistakes.jpg",PP_mist_plot)
+ggsave("Figures/Aggregated/PP_rounds.jpg",PP_rounds_plot)
+
+#what is the probability the mistakes effect is only positive (no overlap with 0)
+post_mist = samples_mistakes$bM
+sum(post_mist<0)/length(post_mist)
+
+post_rounds = samples_all$bR
+sum(post_rounds<0)/length(post_rounds)
 ```

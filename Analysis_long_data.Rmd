@@ -56,7 +56,7 @@ Hypothesis 1
   labs(title="Number of linked words by condition",x="",y="number of linked words"))
 
 #linked_n * round
-(explore_linked_n_round=ggplot(data,aes(x=round,y=linked_n,color=Condition))+
+(explore_linked_n_round=ggplot(data,aes(x=trial,y=linked_n,color=Condition))+
   geom_smooth(method = "glm")+
   labs(title="Average number of linked words over played rounds by condition",y="number of linked words"))
 
@@ -70,7 +70,7 @@ Hypothesis 2
   geom_boxplot()+
    labs(title="Performance by condition",x=""))
 
-(explore_performance_round = ggplot(data,aes(x=round,y=performance,color=Condition))+
+(explore_performance_round = ggplot(data,aes(x=trial,y=performance,color=Condition))+
   geom_smooth(method="glm")+
   labs(title="Average performance over played rounds by condition",y="performance"))
 
@@ -92,7 +92,7 @@ m_linked_n = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
         logit(p) <- a + bL*linked_n ,
-        a ~ dnorm(0,0.1),
+        a ~ dnorm(0,0.05),
         bL ~ dnorm(0,0.2)
     ) ,
     data=data,
@@ -106,7 +106,7 @@ m_linked_n_random = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
         logit(p) <- a[ID] + bL*linked_n ,
-        a[ID] ~ dnorm(0,0.1),
+        a[ID] ~ dnorm(0,0.05),
         bL ~ dnorm(0,0.2)
     ) ,
     data=data,
@@ -119,7 +119,7 @@ m_linked_n_round = map2stan(
     alist(
       friends ~ dbinom( 1 , p ),
       logit(p) <- a +bL*linked_n +bT*trial +bLT*linked_n*trial,
-      a ~ dnorm(0,0.1),
+      a ~ dnorm(0,0.05),
       bL ~ dnorm(0,0.2),
       bT ~ dnorm(0,0.2),
       bLT ~ dnorm(0,0.2)
@@ -154,7 +154,7 @@ m_performance = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
         logit(p) <- a + bP*performance ,
-        a ~ dnorm(0,0.1),
+        a ~ dnorm(0,0.05),
         bP ~ dnorm(0,0.2)
     ) ,
     data=data,
@@ -167,7 +167,7 @@ m_performance_random = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
         logit(p) <- a[ID] + bP*performance ,
-        a[ID] ~ dnorm(0,0.1),
+        a[ID] ~ dnorm(0,0.05),
         bP ~ dnorm(0,0.2)
     ) ,
     data=data,
@@ -180,7 +180,7 @@ m_performance_round = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
         logit(p) <- a + bP*performance + bT*trial + bPT*performance*trial ,
-        a ~ dnorm(0,0.1),
+        a ~ dnorm(0,0.05),
         bP ~ dnorm(0,0.2),
         bT ~ dnorm(0,0.2),
         bPT ~ dnorm(0,0.2)
@@ -195,7 +195,7 @@ m_performance_round_random = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
         logit(p) <- a[ID] + bP*performance + bT*trial + bPT*performance*trial ,
-        a[ID] ~ dnorm(0,0.1),
+        a[ID] ~ dnorm(0,0.05),
         bP ~ dnorm(0,0.2),
         bT ~ dnorm(0,0.2),
         bPT ~ dnorm(0,0.2)
@@ -218,7 +218,7 @@ m_performance_linked_n= map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
         logit(p) <- a[ID] + bP*performance +  bL*linked_n,
-        a[ID] ~ dnorm(0,0.1),
+        a[ID] ~ dnorm(0,0.05),
         bP ~ dnorm(0,0.2),
         bL ~ dnorm(0,0.2)
     ) ,
@@ -229,7 +229,7 @@ m_full = map2stan(
     alist(
         friends ~ dbinom( 1 , p ) ,
         logit(p) <- a[ID] + bP*performance +  bL*linked_n + bT*trial + bPT*performance*trial + bLT*linked_n*trial,
-        a[ID] ~ dnorm(0,0.1),
+        a[ID] ~ dnorm(0,0.05),
         bP ~ dnorm(0,0.2),
         bL ~ dnorm(0,0.2),
         bT ~ dnorm(0,0.2),
@@ -246,7 +246,10 @@ pairs(m_full)
 
 # 3. Compare models and assess model quality (PPC plots)
 ```{r}
-compare(m_linked_n_round_random,m_performance_round_random,m_performance_linked_n,m_full)
+comparison=compare(m_linked_n,m_linked_n_random,m_linked_n_round,m_linked_n_round_random,m_performance,m_performance_random,m_performance_round,m_performance_round_random,m_performance_linked_n,m_full)
+comparison=round(comparison@output,3)
+
+write.csv(comparison,"Results/Long/model_selection.csv")
 
 #PPC plots - how could are the models predicting proportion of friend groups in the data
 
@@ -264,25 +267,30 @@ y_performance_link=sim(m_performance_linked_n)
 y_full = sim(m_full,n=1e4)
 
 # + an ensemble model
-ens = ensemble(m_linked_n_round_random,m_performance_round_random,m_performance_linked_n,m_performance_linked_n_round,m_linked_n_performance_round,m_full)
+ens = ensemble(m_linked_n_round_random,m_performance_round_random,m_performance_linked_n,m_full)
 
 y_ens = ens$sim
 
 ppc_stat(y,y_link_round,stat = 'success',binwidth = 0.01)
 ppc_stat(y,y_performance_round,stat = 'success',binwidth = 0.01)
 ppc_stat(y,y_performance_link,stat = 'success',binwidth = 0.01)
-ppc_stat(y,y_full,stat = 'success',binwidth = 0.01)
+(PPC_full=ppc_stat(y,y_full,stat = 'success',binwidth = 0.01)+
+  labs(title="Predicted proportion of group of friends and the real proportion",x="Proportion of friends"))
 ppc_stat(y,y_ens,stat = 'success',binwidth = 0.01)
+
+ggsave("Figures/Long/PPC_full.jpg",PPC_full)
 ```
 
 
-# 4. Results of each effect (use only best model) and plot it
+# 4. Results of each effect ( use only best model(s) ) and plot it
 ```{r}
 #m_full has the most Akaike's weight so we'll interpret the results from that model
 
 (results_full = precis(m_full,depth = 2))
 results_full = round(results_full@output,3)
 plot(precis(m_full,depth = 2))
+
+write.csv(results_full,"Results/Long/Results_m_full.csv")
 ```
 
 Plot effect of performance
@@ -337,6 +345,34 @@ linked_n_vis=cbind(linked_n_vis,as.data.frame(t(apply(linked_l , 2 , PI , prob=0
   labs(title="Increase of odds of being friends with increasing number of linked words",x="n of linked words",y="Odds"))
 
 ggsave("Figures/Long/Linked_n_visualization.jpg",linked_n_plot)
+```
+
+Compare prior and posterior
+```{r}
+samples_full = extract.samples(m_full,n=1e4)
+
+prior=rnorm(0,0.2,n=1e4)
+
+PP_performance = data.frame(Prior=prior,Posterior=samples_full$bP)
+PP_linked = data.frame(Prior=prior,Posterior=samples_full$bL)
+
+PP_performance = reshape2::melt(PP_performance)
+PP_linked = reshape2::melt(PP_linked)
+
+(PP_perf_plot=ggplot(PP_performance,aes(x=value,color=variable))+
+  geom_line(stat = "density")+
+  labs(title="Prior and posterior of the effect of performance"))
+
+(PP_linked_plot=ggplot(PP_linked,aes(x=value,color=variable))+
+  geom_line(stat = "density")+
+  labs(title="Prior and posterior of the effect of linked_n"))
+
+ggsave("Figures/Long/PP_performance.jpg",PP_perf_plot)
+ggsave("Figures/Long/PP_linked_n.jpg",PP_linked_plot)
+
+#what is the probability the linked_n effect is only positive (no overlap with 0)
+post_linked_n = samples_full$bL
+sum(post_linked_n>0)/length(post_linked_n)
 ```
 
 
