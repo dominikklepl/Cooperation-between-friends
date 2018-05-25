@@ -110,7 +110,15 @@ guessed_matched=match_words("guessing","guessed")
 #cbind the words to the data
 raw_c = cbind(raw_c,linked_matched)
 raw_c = cbind(raw_c,guessed_matched)
+```
 
+Turn all link words to lowercase
+```{r}
+raw_c["link"]=sapply(raw_c$link,tolower)
+```
+
+Merge logs and raw and save it
+```{r}
 #merge raw_c with logs
 data_all = merge(logs_c,raw_c,by='ID')
 write.csv(data_all,"data/data_merged.csv",row.names = F)

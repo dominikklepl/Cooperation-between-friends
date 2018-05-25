@@ -42,4 +42,3 @@ output=output[!duplicated(output$question_format),]
 output <- output[sample(1:nrow(output)), ]
 
 write.csv(output,"data/pairs_for_questionaire.csv",row.names = F)
-
