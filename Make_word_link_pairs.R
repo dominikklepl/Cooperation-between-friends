@@ -32,6 +32,12 @@ for (row in 1:nrow(data)) {
 #unite columns of output into format ready to paste into the questionaire
 output[,ncol(output)+1]=tidyr::unite(output,"question_format",sep=" and ")
 
+#check for duplicates in question_format
+sapply(output, function(x) length(unique(x)))
+
+#we can exclude 226
+output=output[!duplicated(output$question_format),]
+
 #randomize the rows
 output <- output[sample(1:nrow(output)), ]
 
