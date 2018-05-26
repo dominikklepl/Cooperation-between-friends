@@ -141,13 +141,15 @@ rating["question_format"]=sapply(rating["question_format"],tolower)
 
 #and merge
 links_rated = merge(output,rating,by="question_format")
+```
+
+```{r}
+#drop columns - leave rating and link word
+links_rated=links_rated[,3:4]
+
+links_rated = links_rated %>% group_by(link) %>% summarise(semantics_mean=mean(rating),semantics_median=median(rating),semantics_max=max(rating),semantics_min=min(rating))
 
 #save the merged data
 write.csv(links_rated,"data/links_rated.csv",row.names = F)
-```
-
-Merge link ratings into the complete data file
-```{r}
-
 ```
 

@@ -183,9 +183,22 @@ long_data$group_ID=as.factor(long_data$group_ID)
 long_data$group_ID=as.numeric(long_data$group_ID)
 
 #drop useless columns
-long_data=long_data[,c(-1,-2,-5,-6,-8,-12,-13)]
+long_data=long_data[,c(-1,-2,-6,-8,-12,-13)]
 
 #save the data
 write.csv(long_data,"data/clean_data_long.csv",row.names=F)
 ```
+
+# Merge semantics of link-linked
+```{r}
+data = read.csv("data/clean_data_long.csv")
+rating = read.csv("data/links_rated.csv")
+
+#and merge
+data_complete = merge(data,rating,by="link")
+
+#and save
+write.csv(data_complete,"data/long_data_complete.csv",row.names = F)
+```
+
 

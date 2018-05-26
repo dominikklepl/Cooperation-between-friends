@@ -1,182 +1,91 @@
-"question_format","word","link","rating"
-"ant and animal","ant","animal","3.3"
-"ant and comics","ant","comics","8.66666666666667"
-"ant and enemy","ant","enemy","7.36363636363636"
-"ant and ground","ant","ground","4.1"
-"ant and hell","ant","hell","9.09090909090909"
-"ant and hideout","ant","hideout","8.22222222222222"
-"ant and hunger","ant","hunger","9.4"
-"ant and insect","ant","insect","2.77777777777778"
-"ant and red","ant","red","5.55555555555556"
-"ant and runners","ant","runners","7.33333333333333"
-"ant and sandcastle","ant","sandcastle","7.11111111111111"
-"ant and small","ant","small","3.54545454545455"
-"ant and tiny","ant","tiny","4.5"
-"ant and wasp","ant","wasp","5"
-"butter and bread","butter","bread","2.88888888888889"
-"butter and choking","butter","choking","9.4"
-"butter and doctor","butter","doctor","9"
-"butter and edible","butter","edible","5.33333333333333"
-"butter and eskimo","butter","eskimo","9.33333333333333"
-"butter and flavour","butter","flavour","5.44444444444444"
-"butter and food","butter","food","2.4"
-"butter and idiot","butter","idiot","9.4"
-"butter and ingredient","butter","ingredient","4.33333333333333"
-"butter and ingredients","butter","ingredients","5.22222222222222"
-"butter and melting","butter","melting","3"
-"butter and milk","butter","milk","3.55555555555556"
-"butter and raw","butter","raw","7.4"
-"butter and smelly","butter","smelly","8.7"
-"cave and black","cave","black","4.88888888888889"
-"cave and dark","cave","dark","2.6"
-"cave and enemy","cave","enemy","7.27272727272727"
-"cave and gamer","cave","gamer","6.8"
-"cave and ground","cave","ground","4.9"
-"cave and hell","cave","hell","7.88888888888889"
-"cave and hideout","cave","hideout","2.8"
-"cave and hunger","cave","hunger","7"
-"cave and rock","cave","rock","2.63636363636364"
-"cave and room","cave","room","4.8"
-"cave and speleology","cave","speleology","3.77777777777778"
-"cave and stone","cave","stone","2.8"
-"cave and underground","cave","underground","3.18181818181818"
-"cinnamon and choking","cinnamon","choking","6.4"
-"cinnamon and creativity","cinnamon","creativity","9.7"
-"cinnamon and edible","cinnamon","edible","4.45454545454545"
-"cinnamon and flavour","cinnamon","flavour","3.88888888888889"
-"cinnamon and food","cinnamon","food","4.44444444444444"
-"cinnamon and foodmaking","cinnamon","foodmaking","4.22222222222222"
-"cinnamon and idiot","cinnamon","idiot","9.18181818181818"
-"cinnamon and ingredient","cinnamon","ingredient","2.66666666666667"
-"cinnamon and ingredients","cinnamon","ingredients","2.81818181818182"
-"cinnamon and milk","cinnamon","milk","5.81818181818182"
-"cinnamon and raw","cinnamon","raw","6.27272727272727"
-"cinnamon and smelly","cinnamon","smelly","4.88888888888889"
-"cinnamon and spice","cinnamon","spice","2.88888888888889"
-"cinnamon and sweet","cinnamon","sweet","4.27272727272727"
-"devil and comics","devil","comics","7.88888888888889"
-"devil and enemy","devil","enemy","6.33333333333333"
-"devil and hell","devil","hell","2.44444444444444"
-"devil and intelligence","devil","intelligence","6.5"
-"devil and monster","devil","monster","3"
-"devil and ramsay","devil","ramsay","7.54545454545455"
-"devil and red","devil","red","3.88888888888889"
-"devil and scary","devil","scary","5.45454545454545"
-"devil and spicy","devil","spicy","4.55555555555556"
-"eagle and animal","eagle","animal","2.36363636363636"
-"eagle and assassin","eagle","assassin","7"
-"eagle and bald","eagle","bald","6.5"
-"eagle and bird","eagle","bird","1.72727272727273"
-"eagle and doctor","eagle","doctor","9.44444444444444"
-"eagle and fly","eagle","fly","3"
-"eagle and flying","eagle","flying","2.44444444444444"
-"eagle and joke","eagle","joke","9.44444444444444"
-"eagle and mammals","eagle","mammals","7.88888888888889"
-"eagle and vertebrate","eagle","vertebrate","5.09090909090909"
-"eagle and white","eagle","white","5.8"
-"ghost and alive","ghost","alive","6.66666666666667"
-"ghost and assassin","ghost","assassin","7.88888888888889"
-"ghost and bald","ghost","bald","8.18181818181818"
-"ghost and cold","ghost","cold","6"
-"ghost and coldness","ghost","coldness","5.66666666666667"
-"ghost and dead","ghost","dead","2.66666666666667"
-"ghost and fairytale","ghost","fairytale","3.1"
-"ghost and fly","ghost","fly","6.11111111111111"
-"ghost and flying","ghost","flying","5.66666666666667"
-"ghost and freezing","ghost","freezing","8.66666666666667"
-"ghost and nightmare","ghost","nightmare","4.33333333333333"
-"ghost and scary","ghost","scary","3.33333333333333"
-"ghost and theoretical","ghost","theoretical","7.2"
-"ghost and undead","ghost","undead","6"
-"ghost and white","ghost","white","3.72727272727273"
-"idea and abstract","idea","abstract","4.6"
-"idea and creativity","idea","creativity","1.3"
-"idea and doctor","idea","doctor","7.22222222222222"
-"idea and gamer","idea","gamer","7.77777777777778"
-"idea and idiot","idea","idiot","8.33333333333333"
-"idea and intelligence","idea","intelligence","5.77777777777778"
-"idea and theoretical","idea","theoretical","3.45454545454545"
-"idea and think","idea","think","2.09090909090909"
-"idea and thought","idea","thought","2.3"
-"idea and thoughts","idea","thoughts","3.11111111111111"
-"idea and unreal","idea","unreal","5.63636363636364"
-"igloo and cold","igloo","cold","3.44444444444444"
-"igloo and coldness","igloo","coldness","3"
-"igloo and eskimo","igloo","eskimo","3.77777777777778"
-"igloo and freezing","igloo","freezing","2.66666666666667"
-"igloo and idiot","igloo","idiot","9.88888888888889"
-"igloo and joke","igloo","joke","9.88888888888889"
-"igloo and melting","igloo","melting","4.63636363636364"
-"igloo and north","igloo","north","2.63636363636364"
-"igloo and snow","igloo","snow","2.27272727272727"
-"igloo and white","igloo","white","4.33333333333333"
-"kitchen and black","kitchen","black","9"
-"kitchen and creating","kitchen","creating","3.88888888888889"
-"kitchen and foodmaking","kitchen","foodmaking","1.7"
-"kitchen and hell","kitchen","hell","8.11111111111111"
-"kitchen and house","kitchen","house","2.77777777777778"
-"kitchen and hunger","kitchen","hunger","2.88888888888889"
-"kitchen and lady","kitchen","lady","2.2"
-"kitchen and ramsay","kitchen","ramsay","2.9"
-"kitchen and room","kitchen","room","3.22222222222222"
-"kitchen and spicy","kitchen","spicy","3.77777777777778"
-"kitchen and witchcraft","kitchen","witchcraft","6.09090909090909"
-"kitchen and woman","kitchen","woman","7.66666666666667"
-"llama and animal","llama","animal","2.66666666666667"
-"llama and furry","llama","furry","3.88888888888889"
-"llama and gamer","llama","gamer","8.77777777777778"
-"llama and ground","llama","ground","8.88888888888889"
-"llama and idiot","llama","idiot","8.33333333333333"
-"llama and intelligence","llama","intelligence","8"
-"llama and mammal","llama","mammal","4.66666666666667"
-"llama and mammals","llama","mammals","4.66666666666667"
-"llama and milk","llama","milk","6.77777777777778"
-"llama and runners","llama","runners","7.66666666666667"
-"llama and vertebrate","llama","vertebrate","4.63636363636364"
-"pine and alive","pine","alive","6.09090909090909"
-"pine and ananas","pine","ananas","6.44444444444444"
-"pine and cone","pine","cone","2.88888888888889"
-"pine and flora","pine","flora","4.11111111111111"
-"pine and forest","pine","forest","3.3"
-"pine and north","pine","north","7"
-"pine and plant","pine","plant","2.72727272727273"
-"pine and smelly","pine","smelly","6"
-"pine and sweet","pine","sweet","7.55555555555556"
-"pine and tree","pine","tree","3.11111111111111"
-"soup and foodmaking","soup","foodmaking","2.36363636363636"
-"statue and art","statue","art","2.1"
-"statue and creating","statue","creating","5.33333333333333"
-"statue and heroine","statue","heroine","6.9"
-"statue and hunger","statue","hunger","9.1"
-"statue and marvel","statue","marvel","7.6"
-"statue and monument","statue","monument","1.77777777777778"
-"statue and rock","statue","rock","4.22222222222222"
-"statue and sculpture","statue","sculpture","2.11111111111111"
-"statue and stone","statue","stone","3.88888888888889"
-"werewolf and animal","werewolf","animal","4.63636363636364"
-"werewolf and comics","werewolf","comics","5"
-"werewolf and fairytale","werewolf","fairytale","3.22222222222222"
-"werewolf and furry","werewolf","furry","4.22222222222222"
-"werewolf and gamer","werewolf","gamer","8"
-"werewolf and hunger","werewolf","hunger","5"
-"werewolf and intelligence","werewolf","intelligence","9.22222222222222"
-"werewolf and mammal","werewolf","mammal","6"
-"werewolf and mammals","werewolf","mammals","5"
-"werewolf and monster","werewolf","monster","3.33333333333333"
-"werewolf and runners","werewolf","runners","7.81818181818182"
-"werewolf and shapeshifter","werewolf","shapeshifter","4.88888888888889"
-"wonder and abstract","wonder","abstract","5.22222222222222"
-"wonder and comics","wonder","comics","6.1"
-"wonder and fairytale","wonder","fairytale","4.88888888888889"
-"wonder and hell","wonder","hell","8.66666666666667"
-"wonder and heroine","wonder","heroine","7.33333333333333"
-"wonder and lady","wonder","lady","6.7"
-"wonder and marvel","wonder","marvel","3.44444444444444"
-"wonder and miracle","wonder","miracle","2.66666666666667"
-"wonder and sandcastle","wonder","sandcastle","6.66666666666667"
-"wonder and think","wonder","think","4.33333333333333"
-"wonder and thought","wonder","thought","4.6"
-"wonder and thoughts","wonder","thoughts","3.4"
-"wonder and unreal","wonder","unreal","4.36363636363636"
-"wonder and witchcraft","wonder","witchcraft","5.55555555555556"
-"wonder and woman","wonder","woman","4.88888888888889"
+"link","semantics_mean","semantics_median","semantics_max","semantics_min"
+"abstract",4.91111111111111,4.91111111111111,5.22222222222222,4.6
+"alive",6.37878787878788,6.37878787878788,6.66666666666667,6.09090909090909
+"ananas",6.44444444444444,6.44444444444444,6.44444444444444,6.44444444444444
+"animal",3.24166666666667,2.98333333333334,4.63636363636364,2.36363636363636
+"art",2.1,2.1,2.1,2.1
+"assassin",7.44444444444444,7.44444444444444,7.88888888888889,7
+"bald",7.34090909090909,7.34090909090909,8.18181818181818,6.5
+"bird",1.72727272727273,1.72727272727273,1.72727272727273,1.72727272727273
+"black",6.94444444444444,6.94444444444444,9,4.88888888888889
+"bread",2.88888888888889,2.88888888888889,2.88888888888889,2.88888888888889
+"choking",7.9,7.9,9.4,6.4
+"cold",4.72222222222222,4.72222222222222,6,3.44444444444444
+"coldness",4.33333333333333,4.33333333333333,5.66666666666667,3
+"comics",6.91388888888889,6.99444444444445,8.66666666666667,5
+"cone",2.88888888888889,2.88888888888889,2.88888888888889,2.88888888888889
+"creating",4.61111111111111,4.61111111111111,5.33333333333333,3.88888888888889
+"creativity",5.5,5.5,9.7,1.3
+"dark",2.6,2.6,2.6,2.6
+"dead",2.66666666666667,2.66666666666667,2.66666666666667,2.66666666666667
+"doctor",8.55555555555555,9,9.44444444444444,7.22222222222222
+"edible",4.89393939393939,4.89393939393939,5.33333333333333,4.45454545454545
+"enemy",6.98989898989899,7.27272727272727,7.36363636363636,6.33333333333333
+"eskimo",6.55555555555556,6.55555555555556,9.33333333333333,3.77777777777778
+"fairytale",3.73703703703704,3.22222222222222,4.88888888888889,3.1
+"flavour",4.66666666666667,4.66666666666667,5.44444444444444,3.88888888888889
+"flora",4.11111111111111,4.11111111111111,4.11111111111111,4.11111111111111
+"fly",4.55555555555556,4.55555555555556,6.11111111111111,3
+"flying",4.05555555555556,4.05555555555556,5.66666666666667,2.44444444444444
+"food",3.42222222222222,3.42222222222222,4.44444444444444,2.4
+"foodmaking",2.76195286195286,2.36363636363636,4.22222222222222,1.7
+"forest",3.3,3.3,3.3,3.3
+"freezing",5.66666666666667,5.66666666666667,8.66666666666667,2.66666666666667
+"furry",4.05555555555556,4.05555555555556,4.22222222222222,3.88888888888889
+"gamer",7.83888888888889,7.88888888888889,8.77777777777778,6.8
+"ground",5.96296296296296,4.9,8.88888888888889,4.1
+"hell",7.24040404040404,8.11111111111111,9.09090909090909,2.44444444444444
+"heroine",7.11666666666667,7.11666666666667,7.33333333333333,6.9
+"hideout",5.51111111111111,5.51111111111111,8.22222222222222,2.8
+"house",2.77777777777778,2.77777777777778,2.77777777777778,2.77777777777778
+"hunger",6.67777777777778,7,9.4,2.88888888888889
+"idiot",9.02747474747475,9.18181818181818,9.88888888888889,8.33333333333333
+"ingredient",3.5,3.5,4.33333333333333,2.66666666666667
+"ingredients",4.02020202020202,4.02020202020202,5.22222222222222,2.81818181818182
+"insect",2.77777777777778,2.77777777777778,2.77777777777778,2.77777777777778
+"intelligence",7.375,7.25,9.22222222222222,5.77777777777778
+"joke",9.66666666666666,9.66666666666666,9.88888888888889,9.44444444444444
+"lady",4.45,4.45,6.7,2.2
+"mammal",5.33333333333333,5.33333333333333,6,4.66666666666667
+"mammals",5.85185185185185,5,7.88888888888889,4.66666666666667
+"marvel",5.52222222222222,5.52222222222222,7.6,3.44444444444444
+"melting",3.81818181818182,3.81818181818182,4.63636363636364,3
+"milk",5.38383838383839,5.81818181818182,6.77777777777778,3.55555555555556
+"miracle",2.66666666666667,2.66666666666667,2.66666666666667,2.66666666666667
+"monster",3.16666666666667,3.16666666666667,3.33333333333333,3
+"monument",1.77777777777778,1.77777777777778,1.77777777777778,1.77777777777778
+"nightmare",4.33333333333333,4.33333333333333,4.33333333333333,4.33333333333333
+"north",4.81818181818182,4.81818181818182,7,2.63636363636364
+"plant",2.72727272727273,2.72727272727273,2.72727272727273,2.72727272727273
+"ramsay",5.22272727272728,5.22272727272728,7.54545454545455,2.9
+"raw",6.83636363636364,6.83636363636364,7.4,6.27272727272727
+"red",4.72222222222222,4.72222222222222,5.55555555555556,3.88888888888889
+"rock",3.42929292929293,3.42929292929293,4.22222222222222,2.63636363636364
+"room",4.01111111111111,4.01111111111111,4.8,3.22222222222222
+"runners",7.60606060606061,7.66666666666667,7.81818181818182,7.33333333333333
+"sandcastle",6.88888888888889,6.88888888888889,7.11111111111111,6.66666666666667
+"scary",4.39393939393939,4.39393939393939,5.45454545454545,3.33333333333333
+"sculpture",2.11111111111111,2.11111111111111,2.11111111111111,2.11111111111111
+"shapeshifter",4.88888888888889,4.88888888888889,4.88888888888889,4.88888888888889
+"small",3.54545454545455,3.54545454545455,3.54545454545455,3.54545454545455
+"smelly",6.52962962962963,6,8.7,4.88888888888889
+"snow",2.27272727272727,2.27272727272727,2.27272727272727,2.27272727272727
+"speleology",3.77777777777778,3.77777777777778,3.77777777777778,3.77777777777778
+"spice",2.88888888888889,2.88888888888889,2.88888888888889,2.88888888888889
+"spicy",4.16666666666667,4.16666666666667,4.55555555555556,3.77777777777778
+"stone",3.34444444444444,3.34444444444444,3.88888888888889,2.8
+"sweet",5.91414141414142,5.91414141414142,7.55555555555556,4.27272727272727
+"theoretical",5.32727272727273,5.32727272727273,7.2,3.45454545454545
+"think",3.21212121212121,3.21212121212121,4.33333333333333,2.09090909090909
+"thought",3.45,3.45,4.6,2.3
+"thoughts",3.25555555555555,3.25555555555555,3.4,3.11111111111111
+"tiny",4.5,4.5,4.5,4.5
+"tree",3.11111111111111,3.11111111111111,3.11111111111111,3.11111111111111
+"undead",6,6,6,6
+"underground",3.18181818181818,3.18181818181818,3.18181818181818,3.18181818181818
+"unreal",5,5,5.63636363636364,4.36363636363636
+"vertebrate",4.86363636363637,4.86363636363637,5.09090909090909,4.63636363636364
+"wasp",5,5,5,5
+"white",4.62020202020202,4.33333333333333,5.8,3.72727272727273
+"witchcraft",5.82323232323233,5.82323232323233,6.09090909090909,5.55555555555556
+"woman",6.27777777777778,6.27777777777778,7.66666666666667,4.88888888888889
