@@ -1,0 +1,153 @@
+---
+title: "Link-linked rating"
+author: "Dominik Klepl"
+date: "26 5 2018"
+output: html_document
+---
+
+# 1. Extract link-linked pairs from the participants' data
+```{r}
+#load data
+data= read.csv("data/data_merged.csv",stringsAsFactors = F)
+
+#we need only columns "link" and "linked"
+
+data = data[,c("link","linked")]
+
+#take subset for testing
+test=data[1:3,]
+
+output={}
+for (row in 1:nrow(data)) {
+  link = data[row,"link"]
+  linked = data[row,"linked"]
+  
+  #split linked into separate words
+  linked_split = strsplit(linked,",")
+  linked_split=as.data.frame(linked_split)
+  
+  #2nd column with link word
+  link = rep(link,nrow(linked_split))
+  
+  round_words = cbind(linked_split,link)
+  
+  #change column names
+  colnames(round_words)=c("word","link")
+  
+  #cbind round_words to the output df
+  output=rbind(output,round_words)
+}
+
+#unite columns of output into format ready to paste into the questionaire
+output[,ncol(output)+1]=tidyr::unite(output,"question_format",sep=" and ")
+
+#check for duplicates in question_format
+sapply(output, function(x) length(unique(x)))
+
+#just to be sure, convert everything to lower case
+output["question_format"]=sapply(output["question_format"],tolower)
+
+#we can exclude 226
+output=output[!duplicated(output$question_format),]
+
+#randomize the rows
+output <- output[sample(1:nrow(output)), ]
+
+write.csv(output,"data/pairs_for_questionaire.csv",row.names = F)
+```
+
+# 2. Merge and clean the data from questionnaire
+```{r}
+Q1 = read.csv("data/words_rating/Questions_1.csv")
+Q2 = read.csv("data/words_rating/Questions_2.csv")
+Q3 = read.csv("data/words_rating/Questions_3.csv")
+Q4 = read.csv("data/words_rating/Questions_4.csv")
+Q5 = read.csv("data/words_rating/Questions_5.csv")
+```
+
+Get out only info about raters
+```{r}
+logs = rbind(Q1[,2:4], Q2[,2:4], Q3[,2:4], Q4[,2:4], Q5[,2:4])
+
+#Age
+mean(logs$Age)
+sd(logs$Age)
+range(logs$Age)
+
+#Gender
+sum(logs$Gender=="Female")
+sum(logs$Gender=="Male")
+
+#Nationality
+logs$Nationality=tolower(logs$Nationality)
+length(unique(logs$Nationality))
+```
+
+Filter out outliers, raters using only one number etc.
+```{r}
+#remove info columns
+Q1=Q1[,5:39]
+Q2=Q2[,5:39]
+Q3=Q3[,5:39]
+Q4=Q4[,5:39]
+Q5=Q5[,5:39]
+
+#check for NAs
+anyNA(Q1)
+anyNA(Q2)
+anyNA(Q3)
+anyNA(Q4) #yes
+anyNA(Q5) #yes
+
+#look out for raters who use only very small portion of the scale
+apply(Q1,1,function(x) length(unique(x)))
+apply(Q2,1,function(x) length(unique(x))) #2=5, 7=1
+apply(Q3,1,function(x) length(unique(x)))
+apply(Q4,1,function(x) length(unique(x))) #1=2
+apply(Q5,1,function(x) length(unique(x))) #3=2, 9=3
+
+#remove those
+Q2 = Q2[c(-2,-7),]
+Q4 = Q4[-1,]
+Q5 = Q5[c(-3,-9),]
+```
+
+Get average rating of each pair
+```{r}
+library(dplyr)
+
+Q1 = Q1 %>% summarise_all(mean,na.rm=T)
+Q2 = Q2 %>% summarise_all(mean,na.rm=T)
+Q3 = Q3 %>% summarise_all(mean,na.rm=T)
+Q4 = Q4 %>% summarise_all(mean,na.rm=T)
+Q5 = Q5 %>% summarise_all(mean,na.rm=T)
+
+#merge Qs
+rating = cbind(Q1, Q2, Q3, Q4, Q5)
+
+#reshape the data - from wide to long format
+rating = reshape2::melt(rating,value.name="rating")
+colnames(rating)[1]="question_format"
+```
+
+Merge with the original list of pairs - "output" dataframe
+```{r}
+#replace dots with whitespaces in the word pairs so tha they can be merged
+rating$question_format = sapply(rating$question_format,gsub,pattern = ".",replacement = " ",fixed = T)
+
+rating$question_format = sapply(rating$question_format,gsub,pattern = "-",replacement = "",fixed = T)
+
+rating["question_format"]=sapply(rating["question_format"],tolower)
+
+#and merge
+links_rated = merge(output,rating,by="question_format")
+
+#save the merged data
+write.csv(links_rated,"data/links_rated.csv",row.names = F)
+```
+
+Merge link ratings into the complete data file
+```{r}
+
+```
+

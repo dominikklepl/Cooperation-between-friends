@@ -12,7 +12,7 @@ library(readxl)
 
 #Load data
 ```{r load data}
-raw=readxl::read_xlsx("data/raw.xlsx",na="NA")
+raw=read.csv2("data/raw.csv",na="NA")
 logs=readxl::read_xlsx('data/logs.xlsx',na="NA")
 ```
 
