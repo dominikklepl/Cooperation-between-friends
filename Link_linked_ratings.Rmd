@@ -152,4 +152,3 @@ links_rated = links_rated %>% group_by(link) %>% summarise(semantics_mean=mean(r
 #save the merged data
 write.csv(links_rated,"data/links_rated.csv",row.names = F)
 ```
-
