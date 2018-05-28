@@ -1,0 +1,610 @@
+---
+title: "Long_data_analysis_final"
+author: "Dominik Klepl"
+date: "28 5 2018"
+output: html_document
+---
+
+# Used libraries
+```{r library}
+pacman::p_load(rethinking,ggplot2,ggthemes,bayesplot)
+```
+
+# Load data
+```{r load data}
+data=read.csv("data/long_data_complete.csv")
+
+#rename group_ID to just ID
+colnames(data)[c(2,7)]=c("ID","trial")
+data$ID = as.factor(data$ID)
+```
+
+
+
+Hypothesis 1: Friends tend to link more words together + interaction = friends' linked_n decreases with rounds whereas strangers' remain stable.
+  models: friends ~ linked_n
+          friends ~ linked_n * round
+
+Hypothesis 2: Friends make more mistakes - performance is lower.
+  models: friends ~ performance
+          friends ~ performance * round 
+            - It should improve with time for friends, there's not much to improve for                 strangers.
+IF H1 or H2 valid => hypotheses explaining why friends perform worse          
+Hypothesis 3: Friends tend to overestimate their confidence in success
+  models: friends ~ confidence 
+          friends ~ confidence * is_success
+            - when success (1) - confidence is higher than strangers'
+            - when not success (0) - confidence is also higher than strangers'
+            
+Hypothesis 4: Friends use more abstract link words
+  models: friends ~ semantic_mean
+          friends ~ semantic_mean * is_success
+            - when success - lower semantics
+            - not success - higher semantics - cause mistakes
+          friends ~ semantic_mean * confidence
+            - shouldn't be according to our hypothesis
+
+# 1. Explore the data
+```{r explore data}
+psych::describeBy(data[,c(-1,-4:-6,-8)],data$friends)
+
+#create condition variable just for plotting purposes
+data$Condition=ifelse(data$friends==1,yes="Friends",no="Strangers")
+data$Condition=as.factor(data$Condition)
+```
+
+Hypothesis 1
+```{r}
+#linked_n 
+(explore_linked_n=ggplot(data,aes(x=Condition,y=linked_n,fill=Condition))+
+  geom_boxplot()+
+  labs(title="Number of linked words by condition",x="",y="number of linked words"))
+
+#linked_n * round
+(explore_linked_n_round=ggplot(data,aes(x=trial,y=linked_n,color=Condition))+
+  geom_smooth(method = "glm")+
+  labs(title="Average number of linked words over played rounds by condition",y="number of linked words"))
+
+ggsave("Figures/Long/explore_linked.jpg",explore_linked_n)
+ggsave("Figures/Long/explore_linked_n_round.jpg",explore_linked_n_round)
+```
+
+Hypothesis 2
+```{r}
+(explore_performance = ggplot(data,aes(x=Condition,y=performance,fill=Condition))+
+  geom_boxplot()+
+   labs(title="Performance by condition",x=""))
+
+(explore_performance_round = ggplot(data,aes(x=trial,y=performance,color=Condition))+
+  geom_smooth(method="glm")+
+  labs(title="Average performance over played rounds by condition",y="performance"))
+
+ggsave("Figures/Long/explore_performance.jpg",explore_performance)
+ggsave("Figures/Long/explore_performance_round.jpg",explore_performance_round)
+```
+
+Hypothesis 3
+```{r}
+(explore_confidence = ggplot(data,aes(x=Condition,y=confidence,fill=Condition))+
+  geom_boxplot()+
+   labs(title="Confidence by condition",x="")) #probably nothing  - strangers seem to have bigger spread
+
+(explore_confidence_round = ggplot(data,aes(x=trial,y=confidence,color=Condition))+
+  geom_smooth(method = "glm")+
+   labs(title="Confidence by condition",x="Round")) #basically the same
+
+(explore_confidence_success=ggplot(data,aes(x=is_success,y=confidence,fill=is_success))+
+  geom_boxplot()+
+  facet_wrap(~Condition))
+```
+
+Hypothesis 4
+```{r}
+ggplot(data,aes(x=Condition,y=semantic,fill=Condition))+
+  geom_boxplot()
+
+ggplot(data,aes(x=is_success,y=semantic,fill=is_success))+
+  geom_boxplot()+
+  facet_wrap(~Condition)
+```
+
+# 2. Build models to test hypotheses H1 and H2
+We build separate models for each hypotheses and then one that combines all the predictors.
+
+## 2.1 Hypothesis 1 - Linked_n
+```{r}
+m_linked_n = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bL*linked_n ,
+        a ~ dnorm(0,0.05),
+        bL ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+#check the chains
+plot(m_linked_n)
+pairs(m_linked_n)
+
+m_linked_n_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bL*linked_n ,
+        a[ID] ~ dnorm(0,0.05),
+        bL ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_linked_n_random)
+pairs(m_linked_n_random)
+
+m_linked_n_round = map2stan(
+    alist(
+      friends ~ dbinom( 1 , p ),
+      logit(p) <- a +bL*linked_n +bT*trial +bLT*linked_n*trial,
+      a ~ dnorm(0,0.05),
+      bL ~ dnorm(0,0.2),
+      bT ~ dnorm(0,0.2),
+      bLT ~ dnorm(0,0.2)
+  ),
+    data=data,iter = 1e4,chains=2,cores = 2)
+
+plot(m_linked_n_round)
+pairs(m_linked_n_round)
+
+#needs longer chains - low n_eff
+m_linked_n_round_random = map2stan(
+    alist(
+      friends ~ dbinom( 1 , p ),
+      logit(p) <- a[ID] +bL*linked_n +bT*trial +bLT*linked_n*trial,
+      a[ID] ~ dnorm(0,0.1),
+      bL ~ dnorm(0,0.2),
+      bT ~ dnorm(0,0.2),
+      bLT ~ dnorm(0,0.2)
+  ),
+    data=data,iter = 1e4,chains=2,cores = 2)
+
+plot(m_linked_n_round_random)
+pairs(m_linked_n_round_random)
+
+compare(m_linked_n,m_linked_n_random,m_linked_n_round,m_linked_n_round_random)
+```
+
+
+## 2.2 Hypothesis 2 - Performance
+```{r}
+m_performance = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bP*performance ,
+        a ~ dnorm(0,0.05),
+        bP ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_performance)
+pairs(m_performance)
+
+m_performance_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bP*performance ,
+        a[ID] ~ dnorm(0,0.05),
+        bP ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_performance_random)
+pairs(m_performance_random)
+
+m_performance_round = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bP*performance + bT*trial + bPT*performance*trial ,
+        a ~ dnorm(0,0.05),
+        bP ~ dnorm(0,0.2),
+        bT ~ dnorm(0,0.2),
+        bPT ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_performance_round)
+pairs(m_performance_round)
+
+m_performance_round_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bP*performance + bT*trial + bPT*performance*trial ,
+        a[ID] ~ dnorm(0,0.05),
+        bP ~ dnorm(0,0.2),
+        bT ~ dnorm(0,0.2),
+        bPT ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_performance_round_random)
+pairs(m_performance_round_random)
+
+compare(m_performance,m_performance_random,m_performance_round,m_performance_round_random)
+```
+
+## 2.3 Combinations of models and full model
+```{r}
+m_performance_linked_n= map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bP*performance +  bL*linked_n,
+        a[ID] ~ dnorm(0,0.05),
+        bP ~ dnorm(0,0.2),
+        bL ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+m_full = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bP*performance +  bL*linked_n + bT*trial + bPT*performance*trial + bLT*linked_n*trial,
+        a[ID] ~ dnorm(0,0.05),
+        bP ~ dnorm(0,0.2),
+        bL ~ dnorm(0,0.2),
+        bT ~ dnorm(0,0.2),
+        bPT ~ dnorm(0,0.2),
+        bLT ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 2e4,chains = 2,cores=2)
+
+plot(m_full)
+pairs(m_full)
+```
+
+
+# 3. Compare models and assess model quality (PPC plots)
+```{r}
+comparison_1=compare(m_linked_n,m_linked_n_random,m_linked_n_round,m_linked_n_round_random,m_performance,m_performance_random,m_performance_round,m_performance_round_random,m_performance_linked_n,m_full)
+comparison_1=round(comparison_1@output,3)
+
+write.csv(comparison_1,"Results/Long/Model_selection_1.csv")
+
+#PPC plots - how could are the models predicting proportion of friend groups in the data
+
+#define function that calculates the proportion
+success <- function(x) sum(x == 1)/length(x)
+
+#proportion in training data
+y=data$friends
+success(y)
+
+#predictions of models
+y_link_round=sim(m_linked_n_round_random)
+y_performance_round=sim(m_performance_round_random)
+y_performance_link=sim(m_performance_linked_n)
+y_full = sim(m_full,n=1e4)
+
+# + an ensemble model
+ens = ensemble(m_linked_n_round_random,m_performance_round_random,m_performance_linked_n,m_full)
+
+y_ens = ens$sim
+
+ppc_stat(y,y_link_round,stat = 'success',binwidth = 0.01)
+ppc_stat(y,y_performance_round,stat = 'success',binwidth = 0.01)
+ppc_stat(y,y_performance_link,stat = 'success',binwidth = 0.01)
+(PPC_full=ppc_stat(y,y_full,stat = 'success',binwidth = 0.01)+
+  labs(title="Predicted proportion of group of friends and the real proportion",x="Proportion of friends"))
+ppc_stat(y,y_ens,stat = 'success',binwidth = 0.01)
+
+ggsave("Figures/Long/PPC_full.jpg",PPC_full)
+```
+
+
+# 4. Results of each effect ( use only best model(s) ) and plot it
+```{r}
+#m_full has the most Akaike's weight so we'll interpret the results from that model
+
+(results_full = precis(m_full))
+results_full = round(results_full@output,3)
+plot(precis(m_full))
+
+write.csv(results_full,"Results/Long/Results_H1&2.csv")
+```
+
+Plot effect of performance
+```{r}
+#create counterfactual data - everything constant except for performance
+perf=seq(0,100,by=5)
+
+performance_vis = data.frame(
+  performance=perf,
+  linked_n = rep(0,length(perf)),
+  trial = rep(0,length(perf)),
+  friends = rep(0,length(perf)),
+  ID= rep(sample(1:10,1),length(perf))
+)
+
+#compute the mean prediction + 89% intervals
+perf_l = link(m_full,data=performance_vis,n=1e4)
+performance_vis$mean=apply(perf_l, 2 , mean )
+performance_vis=cbind(performance_vis,as.data.frame(t(apply(perf_l , 2 , PI , prob=0.89 ))))
+
+#and plot
+(performance_plot=ggplot(performance_vis,aes(x=performance))+
+  geom_line(aes(y=mean))+
+  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
+  labs(title="Effect of performance",x="performance in %",y="Odds"))
+
+ggsave("Figures/Long/Performance_visualization.jpg",performance_plot)
+```
+
+Now repeat the same for linked_n
+```{r}
+#create counterfactual data - everything constant except for linked_n
+linked=seq(0,15,by=1)
+
+linked_n_vis = data.frame(
+  performance=rep(0,length(linked)),
+  linked_n = linked,
+  trial = rep(0,length(linked)),
+  friends = rep(0,length(linked)),
+  ID= rep(sample(1:10,1),length(linked))
+)
+
+#compute the mean prediction + 89% intervals
+linked_l = link(m_full,data=linked_n_vis,n=1e4)
+linked_n_vis$mean=apply(linked_l, 2 , mean )
+linked_n_vis=cbind(linked_n_vis,as.data.frame(t(apply(linked_l , 2 , PI , prob=0.89 ))))
+
+#and plot
+(linked_n_plot=ggplot(linked_n_vis,aes(x=linked_n))+
+  geom_line(aes(y=mean))+
+  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
+  labs(title="Effect of number of linked words per rouund",x="n of linked words",y="Odds"))
+
+ggsave("Figures/Long/Linked_n_visualization.jpg",linked_n_plot)
+```
+
+# 5. Continue with testing causal hypotheses 3 & 4
+H2 was supported by data => friends perform worse
+
+## 5.1 Hypothesis 3 - Confidence
+```{r}
+m_confidence = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bC*confidence ,
+        a ~ dnorm(0,0.05),
+        bC ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_confidence)
+pairs(m_confidence)
+
+m_confidence_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bC*confidence ,
+        a[ID] ~ dnorm(0,0.05),
+        bC ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_confidence_random)
+pairs(m_confidence_random)
+
+m_confidence_success = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bC*confidence + bS*is_success + bCS*confidence*is_success ,
+        a ~ dnorm(0,0.05),
+        bC ~ dnorm(0,0.2),
+        bS ~ dnorm(0,0.2),
+        bCS ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_confidence_success)
+pairs(m_confidence_success)
+
+m_confidence_success_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bC*confidence + bS*is_success + bCS*confidence*is_success ,
+        a[ID] ~ dnorm(0,0.05),
+        bC ~ dnorm(0,0.2),
+        bS ~ dnorm(0,0.2),
+        bCS ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_confidence_success_random)
+ pairs(m_confidence_success_random)
+```
+
+## 5.2 Hypothesis 4: Semantics
+```{r}
+m_semantic = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bSE*semantic ,
+        a ~ dnorm(0,0.05),
+        bSE ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_semantic)
+pairs(m_semantic)
+
+m_semantic_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bSE*semantic ,
+        a[ID] ~ dnorm(0,0.05),
+        bSE ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_semantic_random)
+pairs(m_semantic_random)
+
+m_semantic_success = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a + bSE*semantic + bS*is_success + bSES*semantic*is_success ,
+        a ~ dnorm(0,0.05),
+        bSE ~ dnorm(0,0.2),
+        bS ~ dnorm(0,0.2),
+        bSES ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_semantic_success)
+pairs(m_semantic_success)
+
+m_semantic_success_random = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bSE*semantic + bS*is_success + bSES*semantic*is_success ,
+        a[ID] ~ dnorm(0,0.05),
+        bSE ~ dnorm(0,0.2),
+        bS ~ dnorm(0,0.2),
+        bSES ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_semantic_success_random)
+pairs(m_semantic_success_random)
+```
+
+# 5.3 Combination of confidence and semantics
+```{r}
+m_confidence_semantic= map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bC*confidence + bSE*semantic,
+        a[ID] ~ dnorm(0,0.05),
+        bC ~ dnorm(0,0.2),
+        bSE ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_confidence_semantic)
+pairs(m_confidence_semantic)
+
+m_full_2 = map2stan(
+    alist(
+        friends ~ dbinom( 1 , p ) ,
+        logit(p) <- a[ID] + bC*confidence + bSE*semantic + bS*is_success + bCS*confidence*is_success + bSES*semantic*is_success,
+        a[ID] ~ dnorm(0,0.05),
+        bC ~ dnorm(0,0.2),
+        bSE ~ dnorm(0,0.2),
+        bS ~ dnorm(0,0.2),
+        bCS ~ dnorm(0,0.2),
+        bSES ~ dnorm(0,0.2)
+    ) ,
+    data=data,
+    iter = 1e4,chains = 2,cores=2)
+
+plot(m_full_2)
+pairs(m_full_2)
+```
+
+# 6. Compare causal models from 5 + model quality
+```{r}
+(comparison_2 = compare(m_confidence,m_confidence_random,m_confidence_success,m_confidence_success_random, m_semantic,m_semantic_random,m_semantic_success,m_semantic_success_random, m_confidence_semantic,m_full_2))
+comparison_2=round(comparison_2@output,3)
+
+write.csv(comparison_2,"Results/Long/Model_selection_2.csv")
+```
+
+# 7. Report and interpret the effects
+
+Report models
+```{r}
+#confidence * is_success
+(results_confidence = precis(m_confidence_success_random))
+plot(results_confidence)
+results_confidence = round(results_confidence@output,3)
+write.csv(results_confidence,"Results/Long/Results_confidence.csv",row.names = F)
+
+(results_semantic = precis(m_semantic_success_random))
+plot(results_semantic)
+results_semantic = round(results_semantic@output,3)
+
+write.csv(results_semantic,"Results/Long/Results_semantic.csv", row.names = F)
+```
+
+
+And now plot the interaction of confidence with is_success
+```{r}
+#create counterfactual data - everything constant except for confidence
+conf=rep(seq(0,10,by=1),2)
+
+confidence_vis = data.frame(
+  confidence = conf,
+  friends = rep(0,length(conf)),
+  is_success = c(rep(0,(length(conf))/2),rep(1,(length(conf))/2)),
+  ID= rep(sample(1:10,1),length(conf))
+)
+
+#compute the mean prediction + 89% intervals
+linked_c = link(m_confidence_success_random,data=confidence_vis,n=1e4)
+confidence_vis$mean=apply(linked_c, 2 , mean )
+confidence_vis=cbind(confidence_vis,as.data.frame(t(apply(linked_c , 2 , PI , prob=0.89 ))))
+
+#rename levels of is_success to make the plot more understandable
+confidence_vis$is_success = ifelse(confidence_vis$is_success==0, yes="Mistake",no="All words guessed")
+
+(confidence_plot=ggplot(confidence_vis,aes(x=confidence))+
+  geom_line(aes(y=mean))+
+  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
+  facet_grid(~is_success)+
+  labs(title="Interaction of confidence with successfulness of the round",y="Odds"))
+
+ggsave("Figures/Long/Confidence_interaction_visualization.jpg",confidence_plot)
+```
+
+And effect of semantic
+```{r}
+#create counterfactual data - everything constant except for confidence
+sem=rep(seq(0,10,by=0.1),2)
+
+semantic_vis = data.frame(
+  semantic = sem,
+  friends = rep(0,length(sem)),
+  is_success = c(rep(0,(length(sem))/2),rep(1,(length(sem))/2)),
+  ID= rep(sample(1:10,1),length(sem))
+)
+
+#compute the mean prediction + 89% intervals
+linked_s = link(m_semantic_success_random,data=semantic_vis,n=1e4)
+semantic_vis$mean=apply(linked_s, 2 , mean )
+semantic_vis=cbind(semantic_vis,as.data.frame(t(apply(linked_s , 2 , PI , prob=0.89 ))))
+
+#rename levels of is_success to make the plot more understandable
+semantic_vis$is_success = ifelse(semantic_vis$is_success==0, yes="Mistake",no="All words guessed")
+
+(semantic_plot=ggplot(semantic_vis,aes(x=semantic))+
+  geom_line(aes(y=mean))+
+  geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
+  facet_grid(~is_success)+
+  labs(title="Interaction of abstractness of the link word with successfulness of the round",y="Odds",x="Abstractness of link word"))
+
+ggsave("Figures/Long/Semantic_interaction_visualization.jpg",semantic_plot)
+```
+

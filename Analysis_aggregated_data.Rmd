@@ -96,7 +96,7 @@ pairs(m_mistakes_random)
 compare(m_mistakes,m_mistakes_random)
 
 #look at the results
-(mistakes_results = precis(m_mistakes_random,depth = 2))
+(mistakes_results = precis(m_mistakes,depth = 1))
 mistakes_results = round(mistakes_results@output,3)
 plot(mistakes_results)
 
@@ -107,16 +107,16 @@ write.csv(mistakes_results,"Results/Aggregated/mistakes_results.csv")
 #generate predictions for sequence of mistakes
 mistakes_vis=data.frame(mistakes=seq(0,30,by=1),condition=rep(0,31),ID=rep(1, 31))
 
-l_mis=link(m_mistakes_random,data=mistakes_vis,1e4)
+l_mis=link(m_mistakes,data=mistakes_vis,1e4)
 mistakes_vis$mean=apply(l_mis , 2 , mean )
 mistakes_vis=cbind(mistakes_vis,as.data.frame(t(apply(l_mis , 2 , PI , prob=0.89 ))))
 
 (odds_plot_mistakes=ggplot(mistakes_vis,aes(x=mistakes))+
   geom_line(aes(y=mean))+
   geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.3,fill="#0092ff")+
-  labs(title="Increase in odds of being friends with increasing number of mistakes",x="Odds",y="Number of mistakes"))
+  labs(title="Effect of mistakes",x="Odds",y="Number of mistakes"))
 
-ggsave("Figures/Aggregated/Plot_increasing_odds_mistakes.jpg",odds_plot_mistakes)
+ggsave("Figures/Aggregated/Mistakes_visualization.jpg",odds_plot_mistakes)
 ```
 
 Condition predicted from n_rounds
@@ -214,27 +214,24 @@ success(yrep_ens)-y_success
 
 (PPC_mistakes=ppc_stat(y,yrep_m,stat="success",binwidth = 0.05)+
   labs(title="Proportion of group of friends predicted from mistakes",x="proportion of friends",y="n of models"))
-(PPC_rounds=ppc_stat(y,yrep_r,stat="success",binwidth = 0.05)+
-  labs(title="Proportion of group of friends predicted from rounds",x="proportion of friends",y="n of models"))
 (PPC_all=ppc_stat(y,yrep_a,stat="success",binwidth = 0.05)+
   labs(title="Proportion of group of friends predicted from mistakes and rounds",x="proportion of friends",y="n of models"))
 (PPC_ensemble=ppc_stat(y,yrep_ens,stat="success",binwidth = 0.05)+
   labs(title="Proportion of group of friends predicted ensemble of all models",x="proportion of friends",y="n of models"))
 
 ggsave("Figures/Aggregated/PPC_mistakes.jpg",PPC_mistakes)
-ggsave("Figures/Aggregated/PPC_rounds.jpg",PPC_rounds)
 ggsave("Figures/Aggregated/PPC_short_model_all.jpg",PPC_all)
 ggsave("Figures/Aggregated/PPC_short_ensemble.jpg",PPC_ensemble)
 ```
 
 According to the PPC plot the full model seems to predict the data the best so let's look at its results and plot them. (report probably either just that or the 2 separate)
 ```{r}
-(all_result = precis(m_all_random,depth = 2))
+(all_result = precis(m_all,depth = 1))
 all_result=round(all_result@output,3)
 
-plot(precis(m_all_random,depth = 2))
+plot(precis(m_all_random,depth = 1))
 
-write.csv(all_result,"Results/Aggregated/short_model_all.csv")
+write.csv(all_result,"Results/Aggregated/model_all.csv")
 ```
 
 Plot the effect of rounds - overlaps with zero so it will look quite bad again but it's in opposite direction after the mistakes are accounted for
@@ -242,14 +239,14 @@ Plot the effect of rounds - overlaps with zero so it will look quite bad again b
 #make new data to predict where rounds change and mistakes stay constant at 0
 all_vis_rounds=data.frame(n_rounds=seq(0,30,by=1),mistakes=rep(0,31),condition=rep(0,31),ID=rep(1,31))
 
-all_l_rounds=link(m_all_random,data=all_vis_rounds,1e4)
+all_l_rounds=link(m_all,data=all_vis_rounds,1e4)
 all_vis_rounds$mean=apply(all_l_rounds , 2 , mean )
 all_vis_rounds=cbind(all_vis_rounds,as.data.frame(t(apply(all_l_rounds , 2 , PI , prob=0.89 ))))
 
 (odds_plot_rounds_all=ggplot(all_vis_rounds,aes(x=n_rounds))+
   geom_line(aes(y=mean))+
   geom_ribbon(aes(ymin=`5%`,ymax=`94%`),alpha=0.5,fill="#0092ff")+
-  labs(title="Change of odds of being friends with increasing number of rounds",x="Number of rounds",y="Odds"))
+  labs(title="Effect of rounds",x="Number of rounds",y="Odds"))
 
 ggsave("Figures/Aggregated/Odds_change_rounds_all.jpg",odds_plot_rounds_all)
 ```
@@ -257,8 +254,8 @@ ggsave("Figures/Aggregated/Odds_change_rounds_all.jpg",odds_plot_rounds_all)
 
 Compare prior and posterior
 ```{r}
-samples_mistakes = extract.samples(m_mistakes_random,n=1e4)
-samples_all = extract.samples(m_all_random,n=1e4)
+samples_mistakes = extract.samples(m_mistakes,n=1e4)
+samples_all = extract.samples(m_all,n=1e4)
 
 prior=rnorm(0,0.2,n=1e4)
 
@@ -281,7 +278,7 @@ ggsave("Figures/Aggregated/PP_rounds.jpg",PP_rounds_plot)
 
 #what is the probability the mistakes effect is only positive (no overlap with 0)
 post_mist = samples_mistakes$bM
-sum(post_mist<0)/length(post_mist)
+sum(post_mist>0)/length(post_mist)
 
 post_rounds = samples_all$bR
 sum(post_rounds<0)/length(post_rounds)
